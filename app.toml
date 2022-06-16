@@ -1,0 +1,22 @@
+[App]
+name = "ai.h2o.wave.imagestyler"
+title = "H2O Image Styling playground"
+description = "Style potraits and have fun."
+LongDescription = "about.md"
+Category = "Data Science"
+Tags = ["DATA_SCIENCE", "MACHINE_LEARNING"]
+Version = "0.1.0"
+
+[Runtime]
+MemoryLimit = "64Gi"
+MemoryReservation = "16Gi"
+module = "start"
+VolumeMount = "/meta_data"
+VolumeSize = "100Gi"
+ResourceVolumeSize = "64Gi"
+GPUCount = 1
+RuntimeVersion = "ub1804_cuda110_cudnn8_py37_wlatest"
+
+[[Env]]
+Name = "H2O_WAVE_MAX_REQUEST_SIZE"
+Value = "20M"

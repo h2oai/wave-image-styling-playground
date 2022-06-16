@@ -1,0 +1,465 @@
+import base64
+import io
+import os
+from io import BytesIO
+from pathlib import Path
+import base64
+
+import numpy as np
+from numpy.typing import NDArray
+from deepface import DeepFace
+from h2o_wave import Q, handle_on, on, site, ui
+from loguru import logger
+from PIL import Image
+
+from ..caller import apply_projection, generate_projection, synthesize_new_img
+from ..latent_editor import load_latent_vectors, edit_image
+from ..utils.dataops import buf2img, get_files_in_dir, remove_file
+from .capture import capture_img, draw_boundary, html_str, js_schema
+from .common import progress_generate_gif, update_controls, update_faces, update_gif, update_processed_face
+from .components import get_header, get_meta, get_user_title
+
+PRE_COMPUTED_PROJECTION_PATH = "./z_output"
+OUTPUT_PATH = "./var/lib/tmp/jobs/output"
+INPUT_PATH = "./images"
+
+
+@on()
+async def close_dialog(q: Q):
+    q.page['meta'].dialog = None
+    await q.page.save()
+
+
+@on()
+async def change_theme(q: Q):
+    """Change the app from light to dark mode"""
+
+    # Toggle dark mode
+    q.user.dark_mode = not q.user.dark_mode
+
+    # Toggle theme icon
+    q.page["header"].items[0].mini_button.icon = (
+        "ClearNight" if q.user.dark_mode else "Sunny"
+    )
+
+    # Switch theme
+    q.page["meta"].theme = "winter-is-coming" if q.user.dark_mode else "ember"
+
+    await q.page.save()
+
+
+async def process(q: Q):
+    logger.debug(f'Source_face {q.args.source_face}')
+    logger.debug(f'Style_face {q.args.style_face}')
+    logger.debug(f'Z Low {q.args.z_low}')
+    logger.debug(f'Z High {q.args.z_high}')
+
+    hash = q.args['#']
+    if q.args.task_dropdown and q.client.task_choice != q.args.task_dropdown:
+        logger.info(f"Task selection: {q.args.task_dropdown}")
+        q.client.task_choice = q.args.task_dropdown
+        reset_edit_results(q)
+    if q.args.source_face and q.client.source_face != q.args.source_face:
+        q.client.source_face = q.args.source_face
+        reset_edit_results(q)
+    if q.args.style_face:
+        q.client.style_face = q.args.style_face
+    if q.args.z_low:
+        q.client.z_low = int(q.args.z_low)
+    if q.args.z_high:
+        q.client.z_high = int(q.args.z_high)
+    if q.args.generate_gif:
+        await progress_generate_gif(q)
+        q.client.gif_path = generate_gif(q.client.source_face, 15)
+    await update_controls(q)
+    await update_faces(q)
+    await update_processed_face(q)
+    await update_gif(q)
+    if q.args.apply:
+        await apply(q)
+    if hash == 'capture':
+        await capture(q)
+    elif q.args.upload_image_dialog:
+        await upload_image_dialog(q)
+    elif q.args.image_upload:
+        await image_upload(q)
+    elif q.args.img_capture_save:
+        await img_capture_save(q)
+    elif q.args.img_capture_save:
+        await img_capture_done(q)
+    elif q.args.change_theme:
+        await change_theme(q)
+    await q.page.save()
+
+
+@on()
+async def img_capture_save(q: Q):
+    logger.debug(f"Save the current image.")
+    new_img = q.client.current_img
+    # Dump the img
+    # Save new generated img locally
+    file_name = f"{INPUT_PATH}/potrait.jpg"
+    pre_computed_wts = f"{PRE_COMPUTED_PROJECTION_PATH}/potrait.npz"
+    logger.debug(f"Image path: {file_name}")
+    # Delete previous image exists.
+    remove_file(file_name)
+    # Also delete pre-computed latent weights
+    remove_file(pre_computed_wts)
+
+    if new_img:
+        logger.debug(f"Save file on disk.")
+        buf2img(new_img, file_name)
+    # Refresh the page.
+    q.args.img_capture_save = False
+    # Update the source image cache
+    q.app.source_faces = get_files_in_dir(dir_path=INPUT_PATH)
+    # Set the current source face as the captured image.
+    q.app.source_face = q.client.source_face = file_name
+    # Return to home page.
+    q.page['meta'].redirect = "/"
+    await q.page.save()
+
+
+@on()
+async def img_capture_done(q: Q):
+    logger.debug(f"Exit image capture.")
+    q.page['meta'].redirect = "/"
+    await q.page.save()
+
+
+@on()
+async def home(q: Q):
+    q.page.drop()
+    q.page['meta'] = get_meta(q)
+    q.page['header'] = get_header(q)
+    q.page['user_title'] = get_user_title(q)
+    await update_controls(q)
+    await update_faces(q)
+    await q.page.save()
+
+
+def source_face_check(q: Q, source_face_arg: str) -> bool:
+    return source_face_arg != q.client.source_face
+
+
+def reset_edit_results(q: Q):
+    q.client.processedimg = None
+    q.client.gif_path = ""
+
+
+@on('source_face', source_face_check)
+async def source_face(q: Q):
+    logger.debug('Calling source_face')
+    await process(q)
+
+
+@on('task_dropdown')
+async def on_task_selection(q: Q):
+    logger.info('Selecting task choice')
+    await process(q)
+
+
+def style_face_check(q: Q, style_face_arg: str) -> bool:
+    return style_face_arg != q.client.style_face
+
+
+@on('style_face', style_face_check)
+async def style_face(q: Q):
+    logger.debug('Calling style_face')
+    await process(q)
+
+
+def z_low_check(q: Q, z_low_arg: str) -> bool:
+    return int(z_low_arg) != q.client.z_low
+
+
+@on('z_low', z_low_check)
+async def z_low(q: Q):
+    logger.debug('Calling z_low')
+    await process(q)
+
+
+def z_high_check(q: Q, z_high_arg: str) -> bool:
+    return int(z_high_arg) != q.client.z_high
+
+
+@on('z_high', z_high_check)
+async def z_high(q: Q):
+    logger.debug('Calling z_high')
+    await process(q)
+
+
+@on()
+async def upload_image_dialog(q: Q):
+    q.page['meta'].dialog = ui.dialog(
+        title='Upload Image',
+        closable=True,
+        items=[ui.file_upload(name='image_upload', label='Upload')],
+    )
+
+    await q.page.save()
+
+
+@on()
+async def image_upload(q: Q):
+    q.page.drop()
+    q.page['meta'] = get_meta(q)
+    q.page['header'] = get_header(q)
+    q.page['user_title'] = get_user_title(q)
+    if q.args.image_upload:
+        local_path = await q.site.download(q.args.image_upload[0], './images/')
+        encoded = base64.b64encode(open(local_path, "rb").read()).decode('ascii')
+        _img = 'data:image/png;base64,{}'.format(encoded)
+        q.client.current_img = _img
+        facial_feature_analysis(q, _img, "Uploaded Image")
+
+    await q.page.save()
+
+
+@on('#capture')
+async def capture(q: Q):
+    if q.args.img_capture_save:
+        await img_capture_save(q)
+    else:
+        logger.debug("Capture clicked.")
+        q.page.drop()
+        q.page['meta'] = get_meta(q)
+        q.page['header'] = get_header(q)
+        q.page['user_title'] = get_user_title(q)
+        _img = await capture_img(q)
+        q.client.current_img = _img
+
+        if _img:
+            # Once the image is captured
+            # Lets do some lightweight Facial Attribute analysis, namely emotions
+            facial_feature_analysis(q, _img)
+        elif q.args.exit_camera:
+            # Return to home page.
+            q.page['meta'].redirect = "/"
+            await q.page.save()
+        else:
+            q.page['meta'].script = ui.inline_script(
+                content=js_schema, requires=[], targets=['video']
+            )
+            q.page['plot'] = ui.markup_card(
+                box=ui.box('middle_left', order=2, height='950px', width='950px'),
+                title='',
+                content=html_str,
+            )
+            # TODO Replace css styling
+            q.page['meta'].stylesheets = [
+                ui.stylesheet(
+                    path='https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css'
+                )
+            ]
+
+    await q.page.save()
+
+
+def facial_feature_analysis(q: Q, _img: str, title="Clicked Image"):
+    models = {}
+    models['emotion'] = DeepFace.build_model('Emotion')
+    obj = DeepFace.analyze(img_path=_img, models=models, actions=['emotion'])
+    logger.info(f"Facial Attributes: {obj}")
+    dominant_emotion = obj['dominant_emotion']
+    logger.info(f"Dominant emotion: {dominant_emotion}")
+    # Draw bounding box around the face
+    _im = _img.split(',')[1]
+    base64_decoded = base64.b64decode(_im)
+    image = Image.open(io.BytesIO(base64_decoded))
+    img_np = np.array(image)
+
+    x = obj['region']['x']
+    y = obj['region']['y']
+    w = obj['region']['w']
+    h = obj['region']['h']
+    img_w_box2 = draw_boundary(img_np, x, y, w, h, text=dominant_emotion)
+    pil_img = Image.fromarray(img_w_box2)
+
+    buff = BytesIO()
+    pil_img = pil_img.convert('RGB')
+    pil_img.save(buff, format="JPEG")
+    new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+    img_format = "data:image/png;base64,"
+    new_image = img_format + new_image_encoded
+
+    q.page['capture_img'] = ui.form_card(
+        box=ui.box('middle_left'),
+        title=title,
+        items=[
+            ui.image("Captured Image", path=new_image, width='550px'),
+            ui.buttons(
+                items=[
+                    ui.button('img_capture_save', 'Save & Exit', icon='Save'),
+                    ui.button('img_capture_done', 'Done', icon='ChromeClose'),
+                ]
+            )
+        ]
+    )
+
+
+@on()
+async def apply(q: Q):
+    source_face = q.client.source_face
+    style_face = q.client.style_face
+    z_low = int(q.client.z_low)
+    z_high = int(q.client.z_high)
+    logger.debug(f"Selected source: {source_face}")
+    logger.debug(f"Style source: {style_face}")
+    logger.debug(f"Other values: {z_low}/{z_high}")
+
+    # Use pre-computed projections
+    source_img_name = source_face.rsplit('.', 1)[0].split('./images/')[1]
+    style_img_name = style_face.rsplit('.', 1)[0].split('./images/')[1]
+    source_img_proj = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
+    style_img_proj = f"{PRE_COMPUTED_PROJECTION_PATH}/{style_img_name}.npz"
+    source_img_proj_path = Path(source_img_proj)
+    style_img_proj_path = Path(style_img_proj)
+
+    new_img = None
+    if q.client.task_choice == 'B':  # Image Editing
+        q.client.age_slider = q.args.age_slider if q.args.age_slider else 0
+        q.client.eye_distance = q.args.eye_distance if q.args.eye_distance else 0
+        q.client.eyebrow_distance = (
+            q.args.eyebrow_distance if q.args.eyebrow_distance else 0
+        )
+        q.client.eye_ratio = q.args.eye_ratio if q.args.eye_ratio else 0
+        q.client.eyes_open = q.args.eyes_open if q.args.eyes_open else 0
+        q.client.gender = q.args.gender if q.args.gender else 0
+
+        q.client.lip_ratio = q.args.lip_ratio if q.args.lip_ratio else 0
+        q.client.mouth_open = q.args.mouth_open if q.args.mouth_open else 0
+        q.client.mouth_ratio = q.args.mouth_ratio if q.args.mouth_ratio else 0
+        q.client.nose_mouth_distance = (
+            q.args.nose_mouth_distance if q.args.nose_mouth_distance else 0
+        )
+        q.client.nose_ratio = q.args.nose_ratio if q.args.nose_ratio else 0
+        q.client.nose_tip = q.args.nose_tip if q.args.nose_tip else 0
+        q.client.pitch = q.args.pitch if q.args.pitch else 0
+        q.client.roll = q.args.roll if q.args.roll else 0
+        q.client.smile = q.args.smile if q.args.smile else 0
+        q.client.yaw = q.args.yaw if q.args.yaw else 0
+        latent_info = load_latent_vectors('./models/stylegan2_attributes/')
+
+        # Update feature info for image editing
+        # Dictionary format:
+        # {
+        #   "feature_name": "value"
+        #  }
+        f_i = {
+            'age': q.client.age_slider,
+            'eye_distance': q.client.eye_distance,
+            'eye_eyebrow_distance': q.client.eyebrow_distance,
+            'eye_ratio': q.client.eye_ratio,
+            'eyes_open': q.client.eyes_open,
+            'gender': q.client.gender,
+            'lip_ratio': q.client.lip_ratio,
+            'mouth_open': q.client.mouth_open,
+            'mouth_ratio': q.client.mouth_ratio,
+            'nose_mouth_distance': q.client.nose_mouth_distance,
+            'nose_ratio': q.client.nose_ratio,
+            'nose_tip': q.client.nose_tip,
+            'pitch': q.client.pitch,
+            'roll': q.client.roll,
+            'smile': q.client.smile,
+            'yaw': q.client.yaw,
+        }
+
+        if source_img_proj_path.is_file():
+            mlc = edit_image(
+                latent_info,
+                source_img_proj_path,
+                f_i,
+            )
+            new_img = synthesize_new_img(mlc)
+        else:
+            generate_projection(source_face, PRE_COMPUTED_PROJECTION_PATH)
+            logger.info(f"New projections computed.")
+            source_img_proj = (
+                f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
+            )
+            source_img_proj_path = Path(source_img_proj)
+            mlc = None
+            if source_img_proj_path.is_file():
+                mlc = edit_image(latent_info, source_img_proj_path, f_i)
+                new_img = synthesize_new_img(mlc)
+        if mlc is not None:
+            edit_img_lc = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}-edit.npz"
+            logger.debug(f"Saving to {edit_img_lc}")
+            edit_img_lc_path = Path(edit_img_lc)
+            np.savez(edit_img_lc_path, x=mlc)
+
+    else:  # Image Styling
+        # Check if precomputed latent space for source img exists
+        if source_img_proj_path.is_file() & style_img_proj_path.is_file():
+            swap_idxs = (z_low, z_high)
+            new_projection = apply_projection(
+                source_img_proj, style_img_proj, swap_idxs
+            )
+            new_img = synthesize_new_img(new_projection)
+        else:
+            if not source_img_proj_path.is_file():
+                generate_projection(source_face, PRE_COMPUTED_PROJECTION_PATH)
+                logger.info(f"New projections computed.")
+                source_img_proj = (
+                    f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
+                )
+                source_img_proj_path = Path(source_img_proj)
+            if not style_img_proj_path.is_file():
+                generate_projection(style_face, PRE_COMPUTED_PROJECTION_PATH)
+                logger.info(f"New projections computed.")
+                style_img_proj = f"{PRE_COMPUTED_PROJECTION_PATH}/{style_img_name}.npz"
+                style_img_proj_path = Path(style_img_proj)
+
+            if source_img_proj_path.is_file() & style_img_proj_path.is_file():
+                swap_idxs = (z_low, z_high)
+                new_projection = apply_projection(
+                    source_img_proj, style_img_proj, swap_idxs
+                )
+                new_img = synthesize_new_img(new_projection)
+
+    # Save new generated img locally
+    file_name = f"{OUTPUT_PATH}/{source_img_name}_{style_img_name}_{z_low}-{z_high}.jpg"
+    logger.debug(f"Generate img: {file_name}")
+    if new_img:
+        new_img.save(file_name)
+
+    reset_edit_results(q)
+    q.client.processedimg = file_name
+    # Update the page with processed image.
+    await update_controls(q)
+    await update_processed_face(q, save=True)
+    await update_gif(q)
+
+
+def generate_gif(source_face: str, image_count: int = 5) -> str:
+    logger.debug("Generating GIF...")
+    source_img_name = source_face.rsplit('.', 1)[0].split('./images/')[1]
+    source_img_proj = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
+    source_img_proj_path = Path(source_img_proj)
+    edit_img_lc = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}-edit.npz"
+    edit_img_lc_path = Path(edit_img_lc)
+
+    # Generate the images for the GIF
+    imgs = []
+    if edit_img_lc_path.is_file():
+        mlc = np.load(str(edit_img_lc_path))['x']
+        input_lc = np.array(np.load(str(source_img_proj_path))['w'])
+        interps = interpolate_latent_codes(input_lc, mlc, np.arange(0, 1, 1 / image_count))
+        for interp_lc in interps:
+            imgs.append(synthesize_new_img(interp_lc))
+
+        # Save the GIF
+        gif_path = f"{OUTPUT_PATH}/{source_img_name}-edit.gif"
+        imgs[0].save(gif_path, save_all=True, append_images=imgs[1:], duration=1, loop=0)
+        logger.debug(f"Saved GIF at {gif_path}...")
+
+        return gif_path
+    return ""
+
+
+def interpolate_latent_codes(lc_1: NDArray, lc_2: NDArray, factors: NDArray):
+    interps = []
+    for fac in factors:
+        interps.append(lc_1 * (1 - fac) + lc_2 * fac)
+    return interps

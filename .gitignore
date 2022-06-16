@@ -50,6 +50,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+reports/
 
 # Translations
 *.mo
@@ -91,12 +92,8 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
-
-# Celery stuff
+# celery beat schedule file
 celerybeat-schedule
-celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
@@ -117,8 +114,11 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
+# Documentation
 /site
+.doc-venv
+doc-venv/
+DOC-ENV/
 
 # mypy
 .mypy_cache/
@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.idea/
+/*.whl
+/*.qz
+
+# VS Code
+.vscode
+
+# Ignore Mac DS_Store files
+.DS_Store
+**/.DS_Store

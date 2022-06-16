@@ -1,0 +1,11 @@
+[Data]
+TempDir = "var/lib/tmp/output"
+
+[PretrainedModels]
+modelDir = "var/lib/pretrained_models"
+modelSupported = ['ffhq.pkl']
+
+[Scheduler]
+jobDir = "var/lib/tmp/jobs"
+MaxLogLines = 500
+LogLevel = "debug"
