@@ -21,3 +21,10 @@ Style potraits and have fun. Styling is currently done using pre-trained Generat
     <td><img src="https://user-images.githubusercontent.com/1318029/174359514-26317b6f-5e1c-4f17-acc7-4ede68aafe6e.png" width=270 height=480></td>
   </tr>
  </table>
+
+
+## More faces
+Find more faces [here](https://drive.google.com/drive/folders/1tZUcXDBeOibC6jcMCtgRRz67pzrAHeHL) or upload your own and have fun
+
+
+More details coming soon.
