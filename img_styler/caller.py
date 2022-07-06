@@ -254,14 +254,15 @@ def generate_gif(source_face: str, image_count: int = 5, style: str = '') -> str
 
         if style and style != 'none':
             for idx, interp_lc in enumerate(interps):
-                imgs.append(generate_style_frames(interp_lc, style, os.path.join(OUTPUT_PATH, f'tmp_{idx}.jpg')))            
+                img = generate_style_frames(interp_lc, style, os.path.join(OUTPUT_PATH, f'tmp_{idx}.jpg'))
+                imgs.append(img.resize((512, 512)))
         else:
             for interp_lc in interps:
-                imgs.append(synthesize_new_img(interp_lc))
+                imgs.append(synthesize_new_img(interp_lc).resize((512, 512)))
 
         # Save the GIF
         gif_path = f"{OUTPUT_PATH}/{source_img_name}-edit.gif"
-        imgs[0].save(gif_path, save_all=True, append_images=imgs[1:], duration=1, loop=0)
+        imgs[0].save(gif_path, save_all=True, append_images=imgs[1:], duration=1, loop=0, optimize=True)
         logger.debug(f"Saved GIF at {gif_path}...")
 
         return gif_path
