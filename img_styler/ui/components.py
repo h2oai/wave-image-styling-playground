@@ -272,6 +272,16 @@ def get_controls(q: Q):
             ],
         )
     else:
+        style_names = {
+            'none': 'None', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
+            'disney_princess': 'Disney Princess', 'edvard_munch': 'Edvard Munch', 'elf': 'Elf', 'ghibli': 'Ghibli',
+            'grafitti_on_wall': 'Grafitti on Wall', 'groot': 'Groot', 'joker': 'Joker', 'marble': 'Marble',
+            'modernism': 'Modernism', 'modigliani': 'Modigliani', 'mona_lisa': 'Mona Lisa', 'oil': 'Oil',
+            'pixar': 'Pixar', 'plastic_puppet': 'Plastic Puppet', 'rick_morty': 'Rick and Morty', 'shrek': 'Shrek',
+            'simpson': 'Simpson', 'sketch': 'Sketch', 'ssj': 'Super Saiyan', 'thanos': 'Thanos', 'ukiyoe': 'Ukiyoe',
+            'van_gogh': 'Van Gogh', 'vintage_comics': 'Vintage Comics', 'werewolf': 'Werewolf',
+            'white_walker': 'White Walker', 'witcher': 'Witcher', 'zombie': 'Zombie', 'zuckerberg': 'Zuckerberg'
+        }
         # Includes edit controls
         edit_controls = ui.form_card(
             box=ui.box(
@@ -301,6 +311,16 @@ def get_controls(q: Q):
                     trigger=True,
                     tooltip='Select a source face for editing. One can upload a new source face as well.',
                 ),
+                ui.dropdown(
+                    name='source_style',
+                    label='Style',
+                    choices=[
+                        ui.choice(name=f'style_{x}', label=style_names[x])
+                        for x in style_names
+                    ],
+                    value=q.client.source_style or 'style_none',
+                    tooltip='Select a source face for editing. One can upload a new source face as well.',
+                ),
                 ui.buttons(
                     [
                         ui.button(
@@ -320,7 +340,7 @@ def get_controls(q: Q):
                 ),
             ],
         )
-        start_index = 2
+        start_index = 3
         [
             edit_controls.items.insert(start_index + _index, _item)
             for _index, _item in enumerate(landmark_controls)

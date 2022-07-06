@@ -8,11 +8,15 @@ import sys
 import numpy as np
 import torch
 import torch.nn.functional as F
+from numpy.typing import NDArray
+from torchvision import utils
 from PIL import Image
 from loguru import logger
+from pathlib import Path
 
 from .dnnlib.util import open_url
 from .face_aligner import align_face
+from .sg2_model import Generator
 
 sys.path.append(f"{os.getcwd()}/img_styler")
 
@@ -24,6 +28,8 @@ device = torch.device('cuda')
 logger.info('Loading networks from "%s"...' % checkpoint_path)
 with open_url(checkpoint_path) as f:
     G = pickle.load(f)['G_ema'].to(device)  # type: ignore
+
+OUTPUT_PATH = "./var/lib/tmp/jobs/output"
 
 
 def apply_projection(proj_a, proj_b, idx_to_swap=(0, 3)):
@@ -208,8 +214,62 @@ def generate_projection(input_img, outdir: str, n_steps=1000, random_state: int 
         synth_image.permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
     )
     logging.debug(f"Shape of synthesized image: {synth_image.shape}")
-    source_img_name = input_img.rsplit('.', 1)[0].split('./images/')[1]
+    source_img_name = input_img.rsplit('.', 1)[0].split('/')[-1]
     Image.fromarray(synth_image, 'RGB').save(f'{outdir}/{source_img_name}.png')
-    np.savez(
-        f'{outdir}/{source_img_name}.npz', w=projected_w.unsqueeze(0).cpu().numpy()
-    )
+    proj_path = f'{outdir}/{source_img_name}.npz'
+    np.savez(proj_path, w=projected_w.unsqueeze(0).cpu().numpy())
+    return proj_path
+
+
+def generate_style_frames(source_latent, style: str, output_path: str = ''):
+    g_ema = Generator(1024, 512, 8, channel_multiplier=2).to('cuda')
+    checkpoint = torch.load(f'./models/stylegan_nada/{style}.pt')
+    g_ema.load_state_dict(checkpoint['g_ema'])
+    
+    w = torch.from_numpy(source_latent).float().cuda()
+    with torch.no_grad():
+        img, _ = g_ema([w], input_is_latent=True, truncation=1, randomize_noise=False)
+
+    if not output_path:
+        output_path = os.path.join(OUTPUT_PATH, 'tmp.jpg')
+    utils.save_image(img, output_path, nrow=1, normalize=True, scale_each=True, range=(-1, 1))
+    logging.debug(f"Saving frame to {output_path}")
+    return Image.open(output_path)
+
+
+def generate_gif(source_face: str, image_count: int = 5, style: str = '') -> str:
+    logger.debug("Generating GIF...")
+    source_img_name = source_face.rsplit('.', 1)[0].split('./images/')[1]
+    source_img_proj = f"./z_output/{source_img_name}.npz"
+    source_img_proj_path = Path(source_img_proj)
+    edit_img_lc = f"./z_output/{source_img_name}-edit.npz"
+    edit_img_lc_path = Path(edit_img_lc)
+
+    # Generate the images for the GIF
+    imgs = []
+    if edit_img_lc_path.is_file():
+        mlc = np.load(str(edit_img_lc_path))['x']
+        input_lc = np.array(np.load(str(source_img_proj_path))['w'])
+        interps = interpolate_latent_codes(input_lc, mlc, np.arange(0, 1, 1 / image_count))
+
+        if style and style != 'none':
+            for idx, interp_lc in enumerate(interps):
+                imgs.append(generate_style_frames(interp_lc, style, os.path.join(OUTPUT_PATH, f'tmp_{idx}.jpg')))            
+        else:
+            for interp_lc in interps:
+                imgs.append(synthesize_new_img(interp_lc))
+
+        # Save the GIF
+        gif_path = f"{OUTPUT_PATH}/{source_img_name}-edit.gif"
+        imgs[0].save(gif_path, save_all=True, append_images=imgs[1:], duration=1, loop=0)
+        logger.debug(f"Saved GIF at {gif_path}...")
+
+        return gif_path
+    return ""
+
+
+def interpolate_latent_codes(lc_1: NDArray, lc_2: NDArray, factors: NDArray):
+    interps = []
+    for fac in factors:
+        interps.append(lc_1 * (1 - fac) + lc_2 * fac)
+    return interps
