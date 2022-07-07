@@ -4,6 +4,8 @@
 // To view a copy of this license, visit
 // https://nvlabs.github.io/stylegan2/license.html
 
+// Reference: https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d_kernel.cu
+
 #include <torch/types.h>
 
 #include <ATen/ATen.h>

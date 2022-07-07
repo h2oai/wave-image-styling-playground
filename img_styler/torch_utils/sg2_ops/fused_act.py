@@ -1,3 +1,5 @@
+# Reference: https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_act.py
+
 import os
 
 import torch

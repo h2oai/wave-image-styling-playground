@@ -1,3 +1,5 @@
+# Reference: https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d.py
+
 from collections import abc
 import os
 

@@ -1,3 +1,5 @@
+# Reference: https://github.com/rinongal/StyleGAN-nada/blob/main/ZSSGAN/model/sg2_model.py
+
 import math
 import random
 import functools

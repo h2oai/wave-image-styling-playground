@@ -1,3 +1,4 @@
+// Reference: https://github.com/rosinality/stylegan2-pytorch/blob/master/op/fused_bias_act.cpp
 
 #include <ATen/ATen.h>
 #include <torch/extension.h>

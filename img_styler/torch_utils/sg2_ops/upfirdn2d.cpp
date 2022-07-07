@@ -1,3 +1,5 @@
+// Reference: https://github.com/rosinality/stylegan2-pytorch/blob/master/op/upfirdn2d.cpp
+
 #include <ATen/ATen.h>
 #include <torch/extension.h>
 
