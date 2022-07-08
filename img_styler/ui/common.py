@@ -21,7 +21,7 @@ from ..utils.dataops import img2buf
 async def update_faces(q: Q, save=False):
     if not q.client.source_face or not os.path.exists(q.client.source_face):
         q.client.source_face = random.choice(q.app.source_faces)
-        
+
     if q.client.task_choice == 'A':
         q.page['source_face'] = get_source_face_card(
             img2buf(q.client.source_face), type='jpg'

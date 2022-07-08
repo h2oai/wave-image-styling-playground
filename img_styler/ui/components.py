@@ -319,7 +319,7 @@ def get_controls(q: Q):
                         for x in style_names
                     ],
                     value=q.client.source_style or 'style_none',
-                    tooltip='Select a source face for editing. One can upload a new source face as well.',
+                    tooltip='Select a style to adapt.',
                 ),
                 ui.buttons(
                     [
@@ -333,7 +333,7 @@ def get_controls(q: Q):
                 ui.buttons(
                     [
                         ui.button(name='apply', label='Apply', primary=True),
-                        ui.button(name='generate_gif', label='Generate GIF', primary=True, 
+                        ui.button(name='generate_gif', label='Generate GIF', primary=True,
                                   disabled=(q.client.processedimg is None)),
                     ],
                     justify='end',
