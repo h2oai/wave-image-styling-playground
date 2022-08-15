@@ -6,14 +6,14 @@ from pathlib import Path
 import base64
 
 import numpy as np
-from numpy.typing import NDArray
 from deepface import DeepFace
 from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
-from ..caller import apply_projection, generate_projection, synthesize_new_img
+from ..caller import apply_projection, generate_projection, synthesize_new_img, generate_style_frames, generate_gif
 from ..latent_editor import load_latent_vectors, edit_image
+from ..sg2_model import Generator
 from ..utils.dataops import buf2img, get_files_in_dir, remove_file
 from .capture import capture_img, draw_boundary, html_str, js_schema
 from .common import progress_generate_gif, update_controls, update_faces, update_gif, update_processed_face
@@ -70,7 +70,8 @@ async def process(q: Q):
         q.client.z_high = int(q.args.z_high)
     if q.args.generate_gif:
         await progress_generate_gif(q)
-        q.client.gif_path = generate_gif(q.client.source_face, 15)
+        style_type = q.client.source_style[len('style_'):]
+        q.client.gif_path = generate_gif(q.client.source_face, 15, style_type)
     await update_controls(q)
     await update_faces(q)
     await update_processed_face(q)
@@ -317,7 +318,10 @@ async def apply(q: Q):
     style_img_proj_path = Path(style_img_proj)
 
     new_img = None
+    style_type = ''
+    file_name = ''
     if q.client.task_choice == 'B':  # Image Editing
+        q.client.source_style = q.args.source_style or 'style_none'
         q.client.age_slider = q.args.age_slider if q.args.age_slider else 0
         q.client.eye_distance = q.args.eye_distance if q.args.eye_distance else 0
         q.client.eyebrow_distance = (
@@ -365,7 +369,9 @@ async def apply(q: Q):
             'yaw': q.client.yaw,
         }
 
-        if source_img_proj_path.is_file():
+        style_type = q.client.source_style[len('style_'):]
+        logger.debug(f"Source style: {style_type}")
+        if source_img_proj_path.is_file() and style_type == 'none':
             mlc = edit_image(
                 latent_info,
                 source_img_proj_path,
@@ -373,15 +379,19 @@ async def apply(q: Q):
             )
             new_img = synthesize_new_img(mlc)
         else:
-            generate_projection(source_face, PRE_COMPUTED_PROJECTION_PATH)
-            logger.info(f"New projections computed.")
-            source_img_proj = (
-                f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
-            )
-            source_img_proj_path = Path(source_img_proj)
-            mlc = None
-            if source_img_proj_path.is_file():
-                mlc = edit_image(latent_info, source_img_proj_path, f_i)
+            if not source_img_proj_path.is_file():
+                generate_projection(source_face, PRE_COMPUTED_PROJECTION_PATH)
+                logger.info(f"New projections computed.")
+                source_img_proj = (
+                    f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
+                )
+                source_img_proj_path = Path(source_img_proj)
+
+            mlc = edit_image(latent_info, source_img_proj_path, f_i)
+            if style_type != 'none':
+                file_name = OUTPUT_PATH + f'/{source_img_name}.jpg'
+                new_img = generate_style_frames(mlc, style_type, file_name)
+            else:
                 new_img = synthesize_new_img(mlc)
         if mlc is not None:
             edit_img_lc = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}-edit.npz"
@@ -419,10 +429,11 @@ async def apply(q: Q):
                 new_img = synthesize_new_img(new_projection)
 
     # Save new generated img locally
-    file_name = f"{OUTPUT_PATH}/{source_img_name}_{style_img_name}_{z_low}-{z_high}.jpg"
-    logger.debug(f"Generate img: {file_name}")
-    if new_img:
-        new_img.save(file_name)
+    if not file_name:
+        file_name = f"{OUTPUT_PATH}/{source_img_name}_{style_img_name}_{z_low}-{z_high}.jpg"
+        logger.debug(f"Generate img: {file_name}")
+        if new_img:
+            new_img.save(file_name)
 
     reset_edit_results(q)
     q.client.processedimg = file_name
@@ -430,36 +441,3 @@ async def apply(q: Q):
     await update_controls(q)
     await update_processed_face(q, save=True)
     await update_gif(q)
-
-
-def generate_gif(source_face: str, image_count: int = 5) -> str:
-    logger.debug("Generating GIF...")
-    source_img_name = source_face.rsplit('.', 1)[0].split('./images/')[1]
-    source_img_proj = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
-    source_img_proj_path = Path(source_img_proj)
-    edit_img_lc = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}-edit.npz"
-    edit_img_lc_path = Path(edit_img_lc)
-
-    # Generate the images for the GIF
-    imgs = []
-    if edit_img_lc_path.is_file():
-        mlc = np.load(str(edit_img_lc_path))['x']
-        input_lc = np.array(np.load(str(source_img_proj_path))['w'])
-        interps = interpolate_latent_codes(input_lc, mlc, np.arange(0, 1, 1 / image_count))
-        for interp_lc in interps:
-            imgs.append(synthesize_new_img(interp_lc))
-
-        # Save the GIF
-        gif_path = f"{OUTPUT_PATH}/{source_img_name}-edit.gif"
-        imgs[0].save(gif_path, save_all=True, append_images=imgs[1:], duration=1, loop=0)
-        logger.debug(f"Saved GIF at {gif_path}...")
-
-        return gif_path
-    return ""
-
-
-def interpolate_latent_codes(lc_1: NDArray, lc_2: NDArray, factors: NDArray):
-    interps = []
-    for fac in factors:
-        interps.append(lc_1 * (1 - fac) + lc_2 * fac)
-    return interps
