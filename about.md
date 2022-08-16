@@ -4,7 +4,7 @@
 
 **Actively Being Maintained:** Yes
 
-**Last Updated:** 11th April, 2022
+**Last Updated:** 15th August, 2022
 
 **Allows for Uploading and Using New Data:** Yes (Turn your camera on and smile)
 
