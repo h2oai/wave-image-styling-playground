@@ -1,6 +1,7 @@
 sync_landmarks_model = s3cmd get --recursive --skip-existing s3://wave-stylegan2/models/shape_predictor_68_face_landmarks.dat ./models/
 sync_attr_models = s3cmd get --recursive --skip-existing s3://wave-stylegan2/models/stylegan2_attributes/ ./models/stylegan2_attributes/
 sync_stgan_nada_models = s3cmd get --recursive --skip-existing s3://wave-stylegan2/models/stylegan_nada/ ./models/stylegan_nada/
+download_ffhq_model = wget -P  ./models/ https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl
 
 .PHONY: download_models
 
@@ -19,6 +20,7 @@ download_models:
 	mkdir -p models
 	mkdir -p models/stylegan2_attributes
 	mkdir -p models/stylegan_nada
+	$(download_ffhq_model)
 	$(sync_landmarks_model)
 	$(sync_attr_models)
 	$(sync_stgan_nada_models)

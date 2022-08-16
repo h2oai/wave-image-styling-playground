@@ -19,16 +19,11 @@ from .face_aligner import align_face
 from .sg2_model import Generator
 
 sys.path.append(f"{os.getcwd()}/img_styler")
-
-checkpoint_path = (
-    'https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl'
-)
 device = torch.device('cuda')
 
-logger.info('Loading networks from "%s"...' % checkpoint_path)
-with open_url(checkpoint_path) as f:
-    G = pickle.load(f)['G_ema'].to(device)  # type: ignore
-
+logger.info('Load pre-trained model...')
+with open(f'./models/ffhq.pkl', 'rb') as f:
+    G = pickle.load(f)['G_ema'].to(device)
 OUTPUT_PATH = "./var/lib/tmp/jobs/output"
 
 
@@ -225,7 +220,7 @@ def generate_style_frames(source_latent, style: str, output_path: str = ''):
     g_ema = Generator(1024, 512, 8, channel_multiplier=2).to('cuda')
     checkpoint = torch.load(f'./models/stylegan_nada/{style}.pt')
     g_ema.load_state_dict(checkpoint['g_ema'])
-    
+
     w = torch.from_numpy(source_latent).float().cuda()
     with torch.no_grad():
         img, _ = g_ema([w], input_is_latent=True, truncation=1, randomize_noise=False)
