@@ -1,11 +1,7 @@
-# This additional installation is in place to help with
-# installing special forecast related dependencies which
-# involves managing C dependencies. These types of dependencies are difficult
-# to manage using `pip install`.
-# Below dependencies are needed to resolve cmake error related to dlib.
+# This additional installation is in place to help
+# resolve cmake error related to dlib.
 import subprocess
 import shlex
-import toml
 import os
 import errno
 from pathlib import Path
@@ -30,7 +26,7 @@ PYTHON_PATH = "./.venv/bin/python" if os.path.isdir("./.venv/bin/") else PATH_ON
 logging.info("Additional installation steps.")
 # For tracking jobs
 make_dir(f"{base_path}/var/lib/tmp/jobs/output/")
-cmd1 = f"{PYTHON_PATH} -m pip install cmake==3.22.5"
+cmd1 = f"{PYTHON_PATH} -m pip install cmake"
 subprocess.check_output(shlex.split(cmd1))
 
 cmd2 = f"{PYTHON_PATH} -m pip install dlib==19.24.0"

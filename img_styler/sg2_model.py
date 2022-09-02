@@ -1,16 +1,13 @@
 # Reference: https://github.com/rinongal/StyleGAN-nada/blob/main/ZSSGAN/model/sg2_model.py
-
 import math
 import random
-import functools
-import operator
+import sys
 
 import torch
 from torch import nn
-from torch.nn import functional as F
 from torch.autograd import Function
+from torch.nn import functional as F
 
-import sys
 sys.path.append("..")
 
 from img_styler.torch_utils.ops import conv2d_gradfix
@@ -341,7 +338,7 @@ class ConstantInput(nn.Module):
     def forward(self, input, is_s_code=False):
         if not is_s_code:
             batch = input.shape[0]
-        else: 
+        else:
             batch = next(iter(input.values())).shape[0]
 
         out = self.input.repeat(batch, 1, 1, 1)
@@ -556,8 +553,8 @@ class Generator(nn.Module):
                    self.modulation_layers[24]: self.modulation_layers[24](style[:, 15]), #s22
                    self.modulation_layers[25]: self.modulation_layers[25](style[:, 17]), #s25
         } for style in styles]
-            
-        return s_codes    
+
+        return s_codes
 
 
     def forward(
@@ -574,7 +571,7 @@ class Generator(nn.Module):
     ):
         if not input_is_s_code:
             return self.forward_with_w(styles, return_latents, inject_index, truncation, truncation_latent, input_is_latent, noise, randomize_noise)
-        
+
         return self.forward_with_s(styles, return_latents, noise, randomize_noise)
 
     def forward_with_w(
@@ -814,4 +811,3 @@ class Discriminator(nn.Module):
         out = self.final_linear(out)
 
         return out
-

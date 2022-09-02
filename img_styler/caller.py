@@ -1,4 +1,5 @@
 # Reference: https://github.com/renatoviolin/webapp-StyleGAN2-ADA-PyTorch
+# Reference: apps/wave-image-styler/licenses/LICENSE_GPL.txt
 import copy
 import logging
 import os
@@ -49,6 +50,7 @@ def synthesize_new_img(projection):
 
 
 # Reference: https://github.com/NVlabs/stylegan2-ada-pytorch/blob/main/projector.py
+# Reference: apps/wave-image-styler/licenses/LICENSE__NVIDIA.txt
 def __project(
     G,
     target: torch.Tensor,  # [C,H,W] and dynamic range [0,255], W & H must match G output resolution

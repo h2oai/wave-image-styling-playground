@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "wave-style-gan2"
-version = "0.1.0"
+name = "wave-image-styler"
+version = "0.2.0"
 license = "MIT"
-description = "Wave app for Nvidia's Style-GAN2"
+description = "App for styling potraits using Machine learning and computer vision"
 authors = [
   "Pramit Choudhary <pchoudha@uci.edu>",
   "Srinivas Neppalli <srinivas.neppalli@h2o.ai>"
@@ -21,19 +21,19 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "~3.8"
-h2o-wave = "^0.20.0"
+python = "3.7.1"
+h2o-wave = "^0.22.0"
 torch = "^1.10.2"
 torchvision = "^0.11.3"
-numpy = "^1.22.2"
+numpy = "^1.21.6"
 Pillow = "^9.0.1"
 aiofiles = "^0.8.0"
 python-multipart = "^0.0.5"
 loguru = "^0.6.0"
 opencv-python = "^4.5.5"
-pandas = "^1.4.1"
+pandas = "^1.2.4"
 matplotlib = "^3.5.1"
-scipy = "^1.8.0"
+scipy = "^1.4.1"
 cmake = "^3.22.2"
 dlib = "^19.23.0"
 requests = "^2.27.1"
@@ -51,7 +51,7 @@ jupyterlab-code-formatter = { version = "^1.4.10", allow-prereleases = true }
 [tool.black]
 line-length = 88
 skip-string-normalization = true
-target-version = ['py38']
+target-version = ['py37.1']
 include = '\.pyi?$'
 exclude = '''
 (
