@@ -34,7 +34,7 @@ purge: ## Purge previous build
 clean: purge ## Clean. Remove virtual environment and user data
 	rm -rf app-data
 	rm -rf var
-	rm -rf .venv poetry.lock .pytest_cache h2o_wave.state
+	rm -rf .venv .pytest_cache h2o_wave.state
 	find . -type d -name "__pycache__" -exec rm -rf \;
 
 reset: ## Delete the cached user data and start fresh

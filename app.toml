@@ -15,6 +15,7 @@ VolumeMount = "/meta_data"
 VolumeSize = "100Gi"
 ResourceVolumeSize = "64Gi"
 GPUCount = 1
+# Below runtime is experimental and not commericially supported on Cloud offering.
 RuntimeVersion = "ub1804_cuda110_cudnn8_devel_py37_wlatest"
 
 [[Env]]
