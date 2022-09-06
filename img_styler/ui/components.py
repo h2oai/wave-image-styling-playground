@@ -136,7 +136,7 @@ def get_controls(q: Q):
         ),
         ui.slider(
             name='nose_ratio',
-            label='Mouth Open',
+            label='Nose Ratio',
             min=-10,
             max=10,
             step=1,
