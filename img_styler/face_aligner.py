@@ -2,6 +2,7 @@
 import PIL
 import PIL.Image
 import dlib
+import cv2
 import numpy as np
 import scipy
 import scipy.ndimage
@@ -15,24 +16,27 @@ def get_landmark(filepath):
     """get landmark with dlib
     :return: np.array shape=(68, 2)
     """
+    faces = dlib.load_rgb_image(filepath)
+    rgb_image = cv2.cvtColor(faces, cv2.COLOR_BGR2RGB)
     detector = dlib.get_frontal_face_detector()
 
-    img = dlib.load_rgb_image(filepath)
-    dets = detector(img, 1)
+    # Detect in grayscale for faster computation
+    dets = detector(rgb_image, 0)
 
     logger.info("Number of faces detected: {}".format(len(dets)))
     for k, d in enumerate(dets):
         logger.debug("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
             k, d.left(), d.top(), d.right(), d.bottom()))
         # Get the landmarks/parts for the face in box d.
-        shape = predictor(img, d)
+        shape = predictor(faces, d)
         logger.debug("Part 0: {}, Part 1: {} ...".format(shape.part(0), shape.part(1)))
 
-    t = list(shape.parts())
-    a = []
-    for tt in t:
-        a.append([tt.x, tt.y])
-    # lm is a shape=(68,2) np.array
+        t = list(shape.parts())
+        a = []
+        for tt in t:
+            a.append([tt.x, tt.y])
+
+    # lm is a shape=(68,2)
     lm = np.array(a)
     return lm
 
@@ -42,6 +46,7 @@ def align_face(filepath):
     :param filepath: str
     :return: PIL Image
     """
+    # TODO Replace wih better SOTA model to align face.
 
     lm = get_landmark(filepath)
 

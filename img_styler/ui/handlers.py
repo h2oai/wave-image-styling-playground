@@ -260,7 +260,9 @@ async def capture(q: Q):
 def facial_feature_analysis(q: Q, _img: str, title="Clicked Image"):
     models = {}
     models['emotion'] = DeepFace.build_model('Emotion')
-    obj = DeepFace.analyze(img_path=_img, models=models, actions=['emotion'])
+    # MTCNN (performed better than RetinaFace for the sample images tried).
+    obj = DeepFace.analyze(img_path=_img, models=models, actions=['emotion'], detector_backend='mtcnn')
+
     logger.info(f"Facial Attributes: {obj}")
     dominant_emotion = obj['dominant_emotion']
     logger.info(f"Dominant emotion: {dominant_emotion}")

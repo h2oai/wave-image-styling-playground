@@ -18,8 +18,7 @@ def buf2img(img, file_name: str):
     _ni = img.split(",")[1]
     image_ = io.BytesIO(base64.b64decode(_ni))
     _img = Image.open(image_)
-    img = _img.resize((1024, 1024), Image.LANCZOS)
-    img = img.convert('RGB')
+    img = _img.convert('RGB')
     img.save(file_name, 'JPEG', quality=95)
 
 
