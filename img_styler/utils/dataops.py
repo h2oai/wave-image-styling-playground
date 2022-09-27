@@ -7,6 +7,7 @@ from PIL import Image
 def img2buf(img_path):
     img = Image.open(img_path)
     buf = io.BytesIO()
+    img = img.convert('RGB')
     img.save(buf, format='JPEG')
     buf.seek(0)
     img_buf = base64.b64encode(buf.read()).decode('utf-8')

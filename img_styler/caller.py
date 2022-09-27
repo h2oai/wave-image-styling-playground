@@ -65,8 +65,8 @@ def __project(
     regularize_noise_weight=1e5,
     verbose=False,
     seed: int = 42,
-    device: torch.device,
-):
+    device: torch.device):
+
     assert target.shape == (G.img_channels, G.img_resolution, G.img_resolution)
     G = copy.deepcopy(G).eval().requires_grad_(False).to(device)  # type: ignore
 

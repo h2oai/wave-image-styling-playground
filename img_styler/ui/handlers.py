@@ -3,20 +3,32 @@ import io
 import os
 from io import BytesIO
 from pathlib import Path
-import base64
 
+import cv2
+import dlib
 import numpy as np
 from deepface import DeepFace
 from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
-from ..caller import apply_projection, generate_projection, synthesize_new_img, generate_style_frames, generate_gif
-from ..latent_editor import load_latent_vectors, edit_image
-from ..sg2_model import Generator
+from ..caller import (
+    apply_projection,
+    generate_gif,
+    generate_projection,
+    generate_style_frames,
+    synthesize_new_img
+)
+from ..latent_editor import edit_image, load_latent_vectors
 from ..utils.dataops import buf2img, get_files_in_dir, remove_file
 from .capture import capture_img, draw_boundary, html_str, js_schema
-from .common import progress_generate_gif, update_controls, update_faces, update_gif, update_processed_face
+from .common import (
+    progress_generate_gif,
+    update_controls,
+    update_faces,
+    update_gif,
+    update_processed_face
+)
 from .components import get_header, get_meta, get_user_title
 
 PRE_COMPUTED_PROJECTION_PATH = "./z_output"
@@ -212,7 +224,7 @@ async def image_upload(q: Q):
         encoded = base64.b64encode(open(local_path, "rb").read()).decode('ascii')
         _img = 'data:image/png;base64,{}'.format(encoded)
         q.client.current_img = _img
-        facial_feature_analysis(q, _img, "Uploaded Image")
+        facial_feature_analysis(q, local_path, "Uploaded Image")
 
     await q.page.save()
 
@@ -257,18 +269,37 @@ async def capture(q: Q):
     await q.page.save()
 
 
-def facial_feature_analysis(q: Q, _img: str, title="Clicked Image"):
+def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
     models = {}
     models['emotion'] = DeepFace.build_model('Emotion')
     # MTCNN (performed better than RetinaFace for the sample images tried).
-    obj = DeepFace.analyze(img_path=_img, models=models, actions=['emotion'], detector_backend='mtcnn')
+    # If face is not detected; it's probably b'cauz of orientation
+    # Try rotating the image by 90 degress to find face (naive approach for now)
+    try:
+        obj = DeepFace.analyze(img_path=img_path, models=models, actions=['emotion'], detector_backend='mtcnn')
+    except ValueError as ve:
+        logger.info(f"Face re-orientation might be needed.")
+        face = dlib.load_rgb_image(img_path)
+        _img = cv2.rotate(face, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite(img_path, _img)
+        # Update default path as well
+        default_path = "/home/pramit/testing/q/apps/system/wave-image-styler/images/potrait.jpg"
+        cv2.imwrite(default_path, _img)
+        buff = BytesIO()
+        pil_img = Image.fromarray(_img).convert('RGB')
+        pil_img.save(buff, format="JPEG")
+        new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+        new_img = f"data:image/png;base64,{new_image_encoded}"
+        q.client.current_img = new_img
+        obj = DeepFace.analyze(img_path=_img, models=models, actions=['emotion'], detector_backend='mtcnn')
 
     logger.info(f"Facial Attributes: {obj}")
     dominant_emotion = obj['dominant_emotion']
     logger.info(f"Dominant emotion: {dominant_emotion}")
     # Draw bounding box around the face
-    _im = _img.split(',')[1]
-    base64_decoded = base64.b64decode(_im)
+    _im = q.client.current_img
+    _img = _im.split(',')[1]
+    base64_decoded = base64.b64decode(_img)
     image = Image.open(io.BytesIO(base64_decoded))
     img_np = np.array(image)
 
@@ -284,6 +315,7 @@ def facial_feature_analysis(q: Q, _img: str, title="Clicked Image"):
     pil_img.save(buff, format="JPEG")
     new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
     img_format = "data:image/png;base64,"
+    # Update image
     new_image = img_format + new_image_encoded
 
     q.page['capture_img'] = ui.form_card(

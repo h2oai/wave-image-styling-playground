@@ -1,54 +1,54 @@
 # Reference: https://github.com/AmarSaini/Epoching_StyleGan2_Setup/blob/master/align_face.py
+import cv2
+import dlib
+import numpy as np
 import PIL
 import PIL.Image
-import dlib
-import cv2
-import numpy as np
 import scipy
 import scipy.ndimage
 from loguru import logger
-
 
 predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmarks.dat')
 
 
 def get_landmark(filepath):
-    """get landmark with dlib
+    """Get landmark with dlib
     :return: np.array shape=(68, 2)
     """
     faces = dlib.load_rgb_image(filepath)
     rgb_image = cv2.cvtColor(faces, cv2.COLOR_BGR2RGB)
+    # Dlib detector is legacy
+    # TODO to swap with MTCNN or SOTA
+    # Attempted to quickly swap the model but that resulted in poor result
+    # Probably needs more fine tunning.
     detector = dlib.get_frontal_face_detector()
-
     # Detect in grayscale for faster computation
     dets = detector(rgb_image, 0)
-
-    logger.info("Number of faces detected: {}".format(len(dets)))
+    logger.info(f"Number of faces detected: {len(dets)}")
+    a = []
     for k, d in enumerate(dets):
         logger.debug("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
             k, d.left(), d.top(), d.right(), d.bottom()))
         # Get the landmarks/parts for the face in box d.
-        shape = predictor(faces, d)
+        shape = predictor(rgb_image, d)
         logger.debug("Part 0: {}, Part 1: {} ...".format(shape.part(0), shape.part(1)))
 
         t = list(shape.parts())
-        a = []
         for tt in t:
             a.append([tt.x, tt.y])
 
-    # lm is a shape=(68,2)
+    # lm is a shape=(68,2) # 68 facial points on the face.
     lm = np.array(a)
     return lm
 
 
-def align_face(filepath):
+def align_face(img_file_path: str):
     """
-    :param filepath: str
+    :param Filepath: str
     :return: PIL Image
     """
     # TODO Replace wih better SOTA model to align face.
-
-    lm = get_landmark(filepath)
+    lm = get_landmark(img_file_path)
 
     lm_chin = lm[0: 17]  # left-right
     lm_eyebrow_left = lm[17: 22]  # left-right
@@ -80,7 +80,7 @@ def align_face(filepath):
     qsize = np.hypot(*x) * 2
 
     # read image
-    img = PIL.Image.open(filepath)
+    img = PIL.Image.open(img_file_path)
 
     output_size = 1024
     transform_size = 4096
