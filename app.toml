@@ -1,11 +1,11 @@
 [App]
 name = "ai.h2o.wave.imagestyler"
 title = "H2O Image Styling playground"
-description = "Style potraits and have fun."
+description = "Style portraits and have fun."
 LongDescription = "about.md"
 Category = "Data Science"
 Tags = ["DATA_SCIENCE", "MACHINE_LEARNING", "COMP_VISION"]
-Version = "0.2.1"
+Version = "0.3.0"
 
 [Runtime]
 MemoryLimit = "64Gi"
@@ -15,7 +15,7 @@ VolumeMount = "/meta_data"
 VolumeSize = "100Gi"
 ResourceVolumeSize = "64Gi"
 GPUCount = 1
-# Below runtime is experimental and not commericially supported on Cloud offering.
+# Below runtime is experimental and not commercially supported on Cloud offering.
 RuntimeVersion = "ub1804_cuda110_cudnn8_devel_py37_wlatest"
 
 [[Env]]
