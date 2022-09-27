@@ -1,6 +1,5 @@
 import base64
 import io
-import os
 from io import BytesIO
 from pathlib import Path
 
@@ -111,8 +110,8 @@ async def img_capture_save(q: Q):
     new_img = q.client.current_img
     # Dump the img
     # Save new generated img locally
-    file_name = f"{INPUT_PATH}/potrait.jpg"
-    pre_computed_wts = f"{PRE_COMPUTED_PROJECTION_PATH}/potrait.npz"
+    file_name = f"{INPUT_PATH}/portrait.jpg"
+    pre_computed_wts = f"{PRE_COMPUTED_PROJECTION_PATH}/portrait.npz"
     logger.debug(f"Image path: {file_name}")
     # Delete previous image exists.
     remove_file(file_name)
@@ -269,29 +268,40 @@ async def capture(q: Q):
     await q.page.save()
 
 
+def rotate_face(image_path: str):
+    face = dlib.load_rgb_image(image_path)
+    _img = cv2.rotate(face, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    cv2.imwrite(image_path, _img)
+    # Update default path as well
+    default_path = f"{image_path.rsplit('/', 1)[0]}/portrait.jpg"
+    logger.debug(f"Defaul path: {default_path}")
+    cv2.imwrite(default_path, _img)
+    buff = BytesIO()
+    pil_img = Image.fromarray(_img)
+    pil_img.save(buff, format="JPEG")
+    new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+    new_img = f"data:image/png;base64,{new_image_encoded}"
+    return new_img
+
+
 def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
     models = {}
     models['emotion'] = DeepFace.build_model('Emotion')
     # MTCNN (performed better than RetinaFace for the sample images tried).
     # If face is not detected; it's probably b'cauz of orientation
-    # Try rotating the image by 90 degress to find face (naive approach for now)
-    try:
-        obj = DeepFace.analyze(img_path=img_path, models=models, actions=['emotion'], detector_backend='mtcnn')
-    except ValueError as ve:
-        logger.info(f"Face re-orientation might be needed.")
-        face = dlib.load_rgb_image(img_path)
-        _img = cv2.rotate(face, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        cv2.imwrite(img_path, _img)
-        # Update default path as well
-        default_path = "./images/potrait.jpg"
-        cv2.imwrite(default_path, _img)
-        buff = BytesIO()
-        pil_img = Image.fromarray(_img).convert('RGB')
-        pil_img.save(buff, format="JPEG")
-        new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
-        new_img = f"data:image/png;base64,{new_image_encoded}"
-        q.client.current_img = new_img
-        obj = DeepFace.analyze(img_path=_img, models=models, actions=['emotion'], detector_backend='mtcnn')
+    # Naive approach:
+    # Try rotating the image by 90 degress to find face
+    # Rotate -> ['Left', 'Right', 'Up', 'Down']
+    for _ in range(4):
+        try:
+            obj = DeepFace.analyze(img_path=img_path, models=models, actions=['emotion'], detector_backend='mtcnn')
+            if obj and len(obj) > 0:
+                break
+        except ValueError as ve:
+            logger.info(f"Face re-orientation might be needed.")
+            new_img = rotate_face(img_path)
+            q.client.current_img = new_img
+            pass
 
     logger.info(f"Facial Attributes: {obj}")
     dominant_emotion = obj['dominant_emotion']
@@ -326,7 +336,7 @@ def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
             ui.buttons(
                 items=[
                     ui.button('img_capture_save', 'Save & Exit', icon='Save'),
-                    ui.button('img_capture_done', 'Done', icon='ChromeClose'),
+                    ui.button('img_capture_done', 'Ignore & Exit', icon='ChromeClose'),
                 ]
             )
         ]
