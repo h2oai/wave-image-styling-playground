@@ -283,7 +283,7 @@ def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
         _img = cv2.rotate(face, cv2.ROTATE_90_COUNTERCLOCKWISE)
         cv2.imwrite(img_path, _img)
         # Update default path as well
-        default_path = "/home/pramit/testing/q/apps/system/wave-image-styler/images/potrait.jpg"
+        default_path = "./images/potrait.jpg"
         cv2.imwrite(default_path, _img)
         buff = BytesIO()
         pil_img = Image.fromarray(_img).convert('RGB')
