@@ -274,7 +274,6 @@ def rotate_face(image_path: str):
     cv2.imwrite(image_path, _img)
     # Update default path as well
     default_path = f"{image_path.rsplit('/', 1)[0]}/portrait.jpg"
-    logger.debug(f"Defaul path: {default_path}")
     cv2.imwrite(default_path, _img)
     buff = BytesIO()
     pil_img = Image.fromarray(_img)
