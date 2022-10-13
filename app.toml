@@ -16,7 +16,7 @@ VolumeSize = "100Gi"
 ResourceVolumeSize = "64Gi"
 GPUCount = 1
 # Below runtime is experimental and not commercially supported on Cloud offering.
-RuntimeVersion = "ub1804_cuda110_cudnn8_devel_py37_wlatest"
+RuntimeVersion = "ub1804_cuda110_cudnn8_devel_py37_wlatest_experimental"
 
 [[Env]]
 Name = "H2O_WAVE_MAX_REQUEST_SIZE"
