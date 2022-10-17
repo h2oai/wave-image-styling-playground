@@ -118,6 +118,11 @@ async def process(q: Q):
     await update_faces(q)
     await update_processed_face(q)
     await update_gif(q)
+    if q.args.task_dropdown == 'B' and q.args.source_style is not None:
+        styles = q.args.source_style[len('style_'):]
+        q.client.source_style = q.args.source_style
+        if styles == 'prompt':
+            logger.info(f"Prompt action selected: {styles}")
     if q.args.apply:
         await apply(q)
     if hash == 'capture':

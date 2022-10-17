@@ -69,6 +69,7 @@ def get_controls(q: Q):
             Fix Resolution (Increase resolution and fix artifacts in an existing image)",
     )
     landmark_controls = [
+        ui.separator(label="Modify"),
         ui.slider(
             name='age_slider',
             label='Age',
@@ -278,7 +279,7 @@ def get_controls(q: Q):
         )
     elif q.client.task_choice == 'B':
         style_names = {
-            'none': 'None', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
+            'none': 'None', 'prompt': 'Prompt', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
             'disney_princess': 'Disney Princess', 'edvard_munch': 'Edvard Munch', 'elf': 'Elf', 'ghibli': 'Ghibli',
             'grafitti_on_wall': 'Grafitti on Wall', 'groot': 'Groot', 'joker': 'Joker', 'marble': 'Marble',
             'modernism': 'Modernism', 'modigliani': 'Modigliani', 'mona_lisa': 'Mona Lisa', 'oil': 'Oil',
@@ -308,13 +309,14 @@ def get_controls(q: Q):
                 ),
                 ui.dropdown(
                     name='source_style',
-                    label='Style',
+                    label='Styles',
                     choices=[
                         ui.choice(name=f'style_{x}', label=style_names[x])
                         for x in style_names
                     ],
                     value=q.client.source_style or 'style_none',
-                    tooltip='Select a style to adapt.',
+                    tooltip='Select a pre-configured style to adapt.',
+                    trigger = True
                 ),
                 ui.buttons(
                     [
