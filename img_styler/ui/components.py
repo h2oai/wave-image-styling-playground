@@ -338,6 +338,7 @@ def get_controls(q: Q):
                     ],
                     justify='end',
                 ),
+                ui.buttons([ui.button('fix_resolution', 'Fix Resolution', primary=True)], justify='end')
             ],
         )
         start_index = 3

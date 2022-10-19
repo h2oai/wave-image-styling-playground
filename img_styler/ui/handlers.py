@@ -2,6 +2,7 @@ import base64
 import io
 from io import BytesIO
 from pathlib import Path
+from GFPGAN.inference_gfpgan import init_gfpgan, restore_image
 
 import cv2
 import dlib
@@ -83,6 +84,11 @@ async def process(q: Q):
         await progress_generate_gif(q)
         style_type = q.client.source_style[len('style_'):]
         q.client.gif_path = generate_gif(q.client.source_face, 15, style_type)
+    if q.args.fix_resolution and (q.client.processedimg or q.client.source_face):
+        q.client.restorer = q.client.restorer or init_gfpgan()
+        img_path = q.client.processedimg or q.client.source_face
+        q.client.processedimg = out_path = 'GFPGAN/output/temp.png'
+        restore_image(q.client.restorer, img_path, out_path)
     await update_controls(q)
     await update_faces(q)
     await update_processed_face(q)
