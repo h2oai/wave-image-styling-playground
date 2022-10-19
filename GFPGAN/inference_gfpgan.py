@@ -1,8 +1,5 @@
-import argparse
-from macpath import basename
 from typing import Union
 import cv2
-import glob
 import numpy as np
 import os
 import torch
@@ -70,24 +67,12 @@ def restore_image(restorer, input_img: Union[np.ndarray, str], output_img_path: 
     # save faces
     suffix = 'restored'
     for idx, (cropped_face, restored_face) in enumerate(zip(cropped_faces, restored_faces)):
-        # save cropped face
-        # save_crop_path = os.path.join(output_path, 'cropped_faces', f'{basename}_{idx:02d}.png')
-        # imwrite(cropped_face, save_crop_path)
-        # save restored face
         basename, _ = os.path.splitext(output_img_path)
         save_face_name = f'{basename}_{suffix}_{idx:02d}.png'
         imwrite(restored_face, save_face_name)
-        # save comparison image
-        # cmp_img = np.concatenate((cropped_face, restored_face), axis=1)
-        # imwrite(cmp_img, os.path.join(output_path, 'cmp', f'{basename}_{idx:02d}.png'))
 
     # save restored img
     if restored_img is not None:
-        imwrite(restored_img, save_face_name)
+        imwrite(restored_img, output_img_path)
 
     print(f'Results saved.')
-
-
-if __name__ == '__main__':
-    restorer = init_gfpgan()
-    restore_image(restorer, r'/home/dilith/Projects/wave-image-styler/GFPGAN/inputs/whole_imgs/00.jpg', './')
