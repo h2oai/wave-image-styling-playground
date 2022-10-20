@@ -55,7 +55,8 @@ def get_controls(q: Q):
     task_choices = [
         ui.choice('A', 'Image Styling'),
         ui.choice('B', 'Image Editing'),
-        ui.choice('C', 'Fix Resolution')]
+        ui.choice('C', 'Fix Resolution'),
+        ui.choice('D', 'Image prompt')]
     task_choice_dropdown = ui.dropdown(
         name='task_dropdown',
         label='Select a styling option',
@@ -63,10 +64,11 @@ def get_controls(q: Q):
         required=True,
         trigger=True,
         choices=task_choices,
-        tooltip="There are 3 options available. \
+        tooltip="There are few options available. \
             Image Styling (Transfer a style to an original image), \
             Image Editing (Edit and transform an existing image), and \
-            Fix Resolution (Increase resolution and fix artifacts in an existing image)",
+            Fix Resolution (Increase resolution and fix artifacts in an existing image), and \
+            Image Prompt (Generate image via prompt)",
     )
     landmark_controls = [
         ui.separator(label="Modify"),
@@ -279,7 +281,7 @@ def get_controls(q: Q):
         )
     elif q.client.task_choice == 'B':
         style_names = {
-            'none': 'None', 'prompt': 'Prompt', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
+            'none': 'None', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
             'disney_princess': 'Disney Princess', 'edvard_munch': 'Edvard Munch', 'elf': 'Elf', 'ghibli': 'Ghibli',
             'grafitti_on_wall': 'Grafitti on Wall', 'groot': 'Groot', 'joker': 'Joker', 'marble': 'Marble',
             'modernism': 'Modernism', 'modigliani': 'Modigliani', 'mona_lisa': 'Mona Lisa', 'oil': 'Oil',
@@ -343,7 +345,7 @@ def get_controls(q: Q):
             for _index, _item in enumerate(landmark_controls)
         ]
         return edit_controls
-    else:
+    elif q.client.task_choice == 'C': # Fix Resolution
         img_name_parts = q.client.source_face.split('/')[-1].split('.')
         new_img_name = '.'.join(img_name_parts[: -1]) + '_fixed.' + img_name_parts[-1]
         disabled = q.client.processedimg is None
@@ -372,6 +374,23 @@ def get_controls(q: Q):
                 ], justify='end'),
             ]
         )
+    else: # Option: 'D' Image Prompt
+        return ui.form_card(box=ui.box(
+                zone='side_controls',
+                order=1), items=[
+                    ui.dropdown(
+                    name='task_dropdown',
+                    label='Select a styling option',
+                    value=q.client.task_choice,
+                    required=True,
+                    trigger=True,
+                    choices=task_choices,
+                    tooltip="There are 2 options available. \
+                        Image Styling (Transfer a style to an original image) and \
+                        Image Editing (Edit and transform an existing image).",
+                    ),
+                    ui.checkbox(name='checkbox_without_training', label='Without re-training', value=True),
+                    ui.checkbox(name='checkbox_re_training', label='With re-training')])
 
 
 def get_source_header():

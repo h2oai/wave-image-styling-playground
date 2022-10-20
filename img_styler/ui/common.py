@@ -1,7 +1,7 @@
 import base64
 import os
 import random
-from h2o_wave import Q
+from h2o_wave import Q, ui
 
 from .components import (
     get_controls,
@@ -30,6 +30,9 @@ async def update_faces(q: Q, save=False):
         q.page['source_face'] = get_source_face_card(
             img2buf(q.client.source_face), type='jpg', height='520px', width='500px'
         )
+        q.page['prompt_textbox'] = ui.form_card(ui.box('main', order=1, height='200px', width='900px'), items=[
+            ui.textbox(name='textbox', label='Prompt', multiline=True),
+            ui.button(name='prompt_apply', label='Apply')])
     del q.page['style_face']
     if q.client.task_choice == 'A':
         q.page['style_face'] = get_style_face_card(
