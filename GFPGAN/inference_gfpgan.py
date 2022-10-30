@@ -67,7 +67,7 @@ def restore_image(restorer, input_img: Union[np.ndarray, str], output_img_path: 
 
     # save faces
     suffix = 'restored'
-    for idx, (cropped_face, restored_face) in enumerate(zip(cropped_faces, restored_faces)):
+    for idx, restored_face in enumerate(restored_faces):
         basename, _ = os.path.splitext(output_img_path)
         save_face_name = f'{basename}_{suffix}_{idx:02d}.png'
         imwrite(restored_face, save_face_name)
