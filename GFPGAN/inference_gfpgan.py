@@ -1,11 +1,12 @@
 from typing import Union
 import cv2
+from loguru import logger
 import numpy as np
 import os
 import torch
 from basicsr.utils import imwrite
 
-from gfpgan import GFPGANer
+from GFPGAN.gfpgan import GFPGANer
 
 
 def init_gfpgan():
@@ -36,13 +37,13 @@ def init_gfpgan():
     url = 'https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth'
 
     # determine model paths
-    model_path = os.path.join('experiments/pretrained_models', model_name + '.pth')
+    model_path = os.path.join('models/gfpgan', model_name + '.pth')
     if not os.path.isfile(model_path):
         model_path = os.path.join('gfpgan/weights', model_name + '.pth')
     if not os.path.isfile(model_path):
         # download pre-trained models from url
         model_path = url
-
+        
     restorer = GFPGANer(
         model_path=model_path,
         upscale=2,
@@ -74,5 +75,4 @@ def restore_image(restorer, input_img: Union[np.ndarray, str], output_img_path: 
     # save restored img
     if restored_img is not None:
         imwrite(restored_img, output_img_path)
-
-    print(f'Results saved.')
+        logger.debug(f'Results saved to {output_img_path}.')
