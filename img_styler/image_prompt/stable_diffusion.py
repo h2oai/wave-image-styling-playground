@@ -1,3 +1,4 @@
+import gc
 import torch
 from torch import autocast
 from PIL import Image
@@ -24,4 +25,6 @@ def generate_image_with_prompt(input_img_path: str, prompt_txt: str = "Face port
 
     file_name = output_path + '/result.jpg'
     images[0].save(file_name)
+    gc.collect()
+    torch.cuda.empty_cache()
     return file_name
