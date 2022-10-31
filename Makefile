@@ -21,6 +21,7 @@ download_models:
 	mkdir -p models
 	mkdir -p models/stylegan2_attributes
 	mkdir -p models/stylegan_nada
+	mkdir -p models/gfpgan/
 	$(download_ffhq_model)
 	$(sync_landmarks_model)
 	$(sync_attr_models)
