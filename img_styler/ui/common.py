@@ -1,8 +1,10 @@
 import base64
 import os
 import random
+
 from h2o_wave import Q, ui
 
+from ..utils.dataops import img2buf
 from .components import (
     get_controls,
     get_footer,
@@ -13,9 +15,8 @@ from .components import (
     get_processed_face_card,
     get_source_face_card,
     get_style_face_card,
-    get_user_title,
+    get_user_title
 )
-from ..utils.dataops import img2buf
 
 
 async def update_faces(q: Q, save=False):
@@ -28,12 +29,13 @@ async def update_faces(q: Q, save=False):
             img2buf(q.client.source_face), type='jpg'
         )
     else:
+        txt_val = q.client.prompt_textbox if q.client.prompt_textbox else ''
         q.page['source_face'] = get_source_face_card(
             img2buf(q.client.source_face), type='jpg', height='520px', width='500px'
         )
         if q.client.task_choice == 'C':
             q.page['prompt_form'] = ui.form_card(ui.box('main', order=1, height='200px', width='900px'), items=[
-                ui.textbox(name='prompt_textbox', label='Prompt', multiline=True, value=q.client.prompt_textbox),
+                ui.copyable_text(name='prompt_textbox', label='Prompt (Express your creativity)', multiline=True, value=txt_val),
                 ui.button(name='prompt_apply', label='Apply')])
 
     del q.page['style_face']

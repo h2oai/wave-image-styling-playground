@@ -385,12 +385,45 @@ def get_controls(q: Q):
                     required=True,
                     trigger=True,
                     choices=task_choices,
-                    tooltip="There are 2 options available. \
+                    tooltip="There are few options available. \
                         Image Styling (Transfer a style to an original image) and \
-                        Image Editing (Edit and transform an existing image).",
+                        Image Editing (Edit and transform an existing image).,\
+                        Image Prompt (Generate image via prompt)."
                     ),
-                    ui.checkbox(name='checkbox_without_training', label='Without re-training', value=True),
-                    ui.checkbox(name='checkbox_re_training', label='Dreambooth fine-tuning')])
+                    ui.dropdown(
+                    name='source_face',
+                    label='Source Face',
+                    choices=[
+                        ui.choice(name=x, label=os.path.basename(x))
+                        for x in q.app.source_faces
+                    ],
+                    value=q.client.source_face,
+                    trigger=True,
+                    tooltip='Select a source face for editing. One can upload a new source face as well.',
+                    ),
+                    ui.buttons(
+                    [
+                        ui.button(
+                            name='upload_image_dialog',
+                            label='Upload',
+                            primary=True,
+                            tooltip='Upload an image.',
+                        ),
+                        ui.button(
+                            name='#capture',
+                            label='Capture',
+                            primary=True,
+                            tooltip='Upload an image using the camera.',
+                        ),
+                    ],
+                    justify='end',
+                    ),
+                    ui.choice_group(name='choice_group_prompt', label='Options', value='checkbox_without_training',
+                    choices=[
+                        ui.choice(name='checkbox_without_training', label='Default diffusion'),
+                        ui.choice(name='checkbox_re_training', label='Dreambooth fine-tuning', disabled=True)
+                    ])
+                ])
 
 
 def get_source_header():
