@@ -52,7 +52,22 @@ def get_user_title(q: Q):
 
 
 def get_controls(q: Q):
-    task_choices = [ui.choice('A', 'Image Styling'), ui.choice('B', 'Image Editing')]
+    task_choices = [
+        ui.choice('A', 'Image Styling'),
+        ui.choice('B', 'Image Editing'),
+        ui.choice('C', 'Fix Resolution')]
+    task_choice_dropdown = ui.dropdown(
+        name='task_dropdown',
+        label='Select a styling option',
+        value=q.client.task_choice,
+        required=True,
+        trigger=True,
+        choices=task_choices,
+        tooltip="There are 3 options available. \
+            Image Styling (Transfer a style to an original image), \
+            Image Editing (Edit and transform an existing image), and \
+            Fix Resolution (Increase resolution and fix artifacts in an existing image)",
+    )
     landmark_controls = [
         ui.slider(
             name='age_slider',
@@ -191,17 +206,7 @@ def get_controls(q: Q):
                 order=1,
             ),
             items=[
-                ui.dropdown(
-                    name='task_dropdown',
-                    label='Select a styling option',
-                    value=q.client.task_choice,
-                    required=True,
-                    trigger=True,
-                    choices=task_choices,
-                    tooltip="There are 2 options available. \
-                        Image Styling (Transfer a style to an original image) and \
-                        Image Editing (Edit and transform an existing image).",
-                ),
+                task_choice_dropdown,
                 ui.dropdown(
                     name='source_face',
                     label='Source Face',
@@ -271,7 +276,7 @@ def get_controls(q: Q):
                 ),
             ],
         )
-    else:
+    elif q.client.task_choice == 'B':
         style_names = {
             'none': 'None', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
             'disney_princess': 'Disney Princess', 'edvard_munch': 'Edvard Munch', 'elf': 'Elf', 'ghibli': 'Ghibli',
@@ -289,17 +294,7 @@ def get_controls(q: Q):
                 order=1,
             ),
             items=[
-                ui.dropdown(
-                    name='task_dropdown',
-                    label='Select a styling option',
-                    value=q.client.task_choice,
-                    required=True,
-                    trigger=True,
-                    choices=task_choices,
-                    tooltip="There are 2 options available. \
-                        Image Styling (Transfer a style to an original image) and \
-                        Image Editing (Edit and transform an existing image).",
-                ),
+                task_choice_dropdown,
                 ui.dropdown(
                     name='source_face',
                     label='Source Face',
@@ -337,7 +332,7 @@ def get_controls(q: Q):
                                   disabled=(q.client.processedimg is None)),
                     ],
                     justify='end',
-                ),
+                )
             ],
         )
         start_index = 3
@@ -346,6 +341,35 @@ def get_controls(q: Q):
             for _index, _item in enumerate(landmark_controls)
         ]
         return edit_controls
+    else:
+        img_name_parts = q.client.source_face.split('/')[-1].split('.')
+        new_img_name = '.'.join(img_name_parts[: -1]) + '_fixed.' + img_name_parts[-1]
+        disabled = q.client.processedimg is None
+        return ui.form_card(
+            box=ui.box(zone='side_controls', order=1),
+            items=[
+                task_choice_dropdown,
+                ui.dropdown(
+                    name='source_face',
+                    label='Source Face',
+                    choices=[
+                        ui.choice(name=x, label=os.path.basename(x))
+                        for x in q.app.source_faces
+                    ],
+                    value=q.client.source_face,
+                    tooltip='Select a source face to be enhanced.',
+                    trigger=True,
+                ),
+                ui.buttons([
+                    ui.button('fix_resolution', 'Fix Resolution', primary=True)
+                ], justify='end'),
+                ui.separator(),
+                ui.textbox('img_name', 'Add fixed image to list', value=new_img_name, disabled=disabled),
+                ui.buttons([
+                    ui.button('save_img_to_list', 'Add', primary=True, disabled=disabled)
+                ], justify='end'),
+            ]
+        )
 
 
 def get_source_header():

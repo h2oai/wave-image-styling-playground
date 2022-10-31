@@ -1,7 +1,9 @@
 import base64
 import io
 from io import BytesIO
+import os
 from pathlib import Path
+from GFPGAN.inference_gfpgan import init_gfpgan, restore_image
 
 import cv2
 import dlib
@@ -83,6 +85,35 @@ async def process(q: Q):
         await progress_generate_gif(q)
         style_type = q.client.source_style[len('style_'):]
         q.client.gif_path = generate_gif(q.client.source_face, 15, style_type)
+    out_path = 'GFPGAN/output/temp.png'
+    if q.args.fix_resolution and (q.client.processedimg or q.client.source_face):
+        q.client.restorer = q.client.restorer or init_gfpgan()
+        img_path = q.client.processedimg or q.client.source_face
+        q.client.processedimg = out_path
+        restore_image(q.client.restorer, img_path, out_path)
+    if q.args.save_img_to_list:
+        new_img_path = os.path.join(INPUT_PATH, q.args.img_name)
+        if os.path.exists(new_img_path):
+            q.page['meta'] = ui.meta_card(box='', notification_bar=ui.notification_bar(
+                text=f'Image by the name "{q.args.img_name}" already exists!',
+                type='error',
+                position='bottom-left',
+            ))            
+        else:
+            os.rename(out_path, new_img_path)
+            temp_img = Image.open(new_img_path)
+            temp_img.save(os.path.join(INPUT_PATH, 'portrait.jpg'))
+            
+            q.app.source_faces = get_files_in_dir(dir_path=INPUT_PATH)
+            q.client.processedimg = new_img_path
+            q.page['meta'] = ui.meta_card(box='', notification_bar=ui.notification_bar(
+                text='Image added to list!',
+                type='success',
+                position='bottom-left',
+            ))
+        await q.page.save()
+        del q.page['meta']
+            
     await update_controls(q)
     await update_faces(q)
     await update_processed_face(q)
@@ -441,8 +472,7 @@ async def apply(q: Q):
             logger.debug(f"Saving to {edit_img_lc}")
             edit_img_lc_path = Path(edit_img_lc)
             np.savez(edit_img_lc_path, x=mlc)
-
-    else:  # Image Styling
+    elif q.client.task_choice == 'A':  # Image Styling
         # Check if precomputed latent space for source img exists
         if source_img_proj_path.is_file() & style_img_proj_path.is_file():
             swap_idxs = (z_low, z_high)
