@@ -390,7 +390,7 @@ def get_controls(q: Q):
                         Image Editing (Edit and transform an existing image).",
                     ),
                     ui.checkbox(name='checkbox_without_training', label='Without re-training', value=True),
-                    ui.checkbox(name='checkbox_re_training', label='With re-training')])
+                    ui.checkbox(name='checkbox_re_training', label='Dreambooth fine-tuning')])
 
 
 def get_source_header():
