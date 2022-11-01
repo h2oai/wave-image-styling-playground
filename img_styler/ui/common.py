@@ -60,6 +60,9 @@ async def update_processed_face(q: Q, save=False):
         )
         if q.client.task_choice == 'D':
             q.page['prompt_form'] = ui.form_card(ui.box('main', order=1, height='200px', width='900px'), items=[
+                ui.checkbox(name='prompt_use_source_img', label='Use source image',
+                                    value=True, tooltip='Image-to-Image text-guided diffusion is applied by default.\
+                                        If un-checked, default Text-to-Image diffusion is used.'),
                 ui.textbox(name='prompt_textbox', label='Prompt', multiline=True, value=q.client.prompt_textbox),
                 ui.button(name='prompt_apply', label='Apply')])
     if save:

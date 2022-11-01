@@ -99,12 +99,12 @@ async def process(q: Q):
                 text=f'Image by the name "{q.args.img_name}" already exists!',
                 type='error',
                 position='bottom-left',
-            ))            
+            ))
         else:
             os.rename(out_path, new_img_path)
             temp_img = Image.open(new_img_path)
             temp_img.save(os.path.join(INPUT_PATH, 'portrait.jpg'))
-            
+
             q.app.source_faces = get_files_in_dir(dir_path=INPUT_PATH)
             q.client.processedimg = new_img_path
             q.page['meta'] = ui.meta_card(box='', notification_bar=ui.notification_bar(
@@ -114,7 +114,7 @@ async def process(q: Q):
             ))
         await q.page.save()
         del q.page['meta']
-            
+
     await update_controls(q)
     await update_faces(q)
     await update_processed_face(q)
@@ -265,8 +265,11 @@ async def image_upload(q: Q):
 async def prompt_apply(q: Q):
     logger.info(f"Enable prompt.")
     logger.info(f"Prompt value: {q.args.prompt_textbox}")
-    res_path = generate_image_with_prompt(input_img_path=q.client.source_face, prompt_txt=q.args.prompt_textbox,
+    if q.args.prompt_use_source_img:
+        res_path = generate_image_with_prompt(input_img_path=q.client.source_face, prompt_txt=q.args.prompt_textbox,
                                                                                     output_path=OUTPUT_PATH)
+    else: # Don't initialize with source image
+        res_path = generate_image_with_prompt(prompt_txt=q.args.prompt_textbox, output_path=OUTPUT_PATH)
 
     q.client.prompt_textbox = q.args.prompt_textbox
     q.client.processedimg = res_path
