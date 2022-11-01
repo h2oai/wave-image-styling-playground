@@ -55,7 +55,8 @@ def get_controls(q: Q):
     task_choices = [
         ui.choice('A', 'Image Styling'),
         ui.choice('B', 'Image Editing'),
-        ui.choice('C', 'Fix Resolution')]
+        ui.choice('C', 'Fix Resolution'),
+        ui.choice('D', 'Image prompt')]
     task_choice_dropdown = ui.dropdown(
         name='task_dropdown',
         label='Select a styling option',
@@ -63,12 +64,14 @@ def get_controls(q: Q):
         required=True,
         trigger=True,
         choices=task_choices,
-        tooltip="There are 3 options available. \
+        tooltip="There are few options available. \
             Image Styling (Transfer a style to an original image), \
             Image Editing (Edit and transform an existing image), and \
-            Fix Resolution (Increase resolution and fix artifacts in an existing image)",
+            Fix Resolution (Increase resolution and fix artifacts in an existing image), and \
+            Image Prompt (Generate image via prompt)",
     )
     landmark_controls = [
+        ui.separator(label="Modify"),
         ui.slider(
             name='age_slider',
             label='Age',
@@ -308,13 +311,14 @@ def get_controls(q: Q):
                 ),
                 ui.dropdown(
                     name='source_style',
-                    label='Style',
+                    label='Styles',
                     choices=[
                         ui.choice(name=f'style_{x}', label=style_names[x])
                         for x in style_names
                     ],
                     value=q.client.source_style or 'style_none',
-                    tooltip='Select a style to adapt.',
+                    tooltip='Select a pre-configured style to adapt.',
+                    trigger = True
                 ),
                 ui.buttons(
                     [
@@ -341,7 +345,7 @@ def get_controls(q: Q):
             for _index, _item in enumerate(landmark_controls)
         ]
         return edit_controls
-    else:
+    elif q.client.task_choice == 'C': # Fix Resolution
         img_name_parts = q.client.source_face.split('/')[-1].split('.')
         new_img_name = '.'.join(img_name_parts[: -1]) + '_fixed.' + img_name_parts[-1]
         disabled = q.client.processedimg is None
@@ -370,6 +374,57 @@ def get_controls(q: Q):
                 ], justify='end'),
             ]
         )
+    else: # Option: 'D' Image Prompt
+        return ui.form_card(box=ui.box(
+                zone='side_controls',
+                order=1), items=[
+                    ui.dropdown(
+                    name='task_dropdown',
+                    label='Select a styling option',
+                    value=q.client.task_choice,
+                    required=True,
+                    trigger=True,
+                    choices=task_choices,
+                    tooltip="There are few options available. \
+                        Image Styling (Transfer a style to an original image), \
+                        Image Editing (Edit and transform an existing image), and \
+                        Fix Resolution (Increase resolution and fix artifacts in an existing image), and \
+                        Image Prompt (Generate image via prompt)"
+                    ),
+                    ui.dropdown(
+                    name='source_face',
+                    label='Source Face',
+                    choices=[
+                        ui.choice(name=x, label=os.path.basename(x))
+                        for x in q.app.source_faces
+                    ],
+                    value=q.client.source_face,
+                    trigger=True,
+                    tooltip='Select a source face for editing. One can upload a new source face as well.',
+                    ),
+                    ui.buttons(
+                    [
+                        ui.button(
+                            name='upload_image_dialog',
+                            label='Upload',
+                            primary=True,
+                            tooltip='Upload an image.',
+                        ),
+                        ui.button(
+                            name='#capture',
+                            label='Capture',
+                            primary=True,
+                            tooltip='Upload an image using the camera.',
+                        ),
+                    ],
+                    justify='end',
+                    ),
+                    ui.choice_group(name='choice_group_prompt', label='Options', value='checkbox_without_training',
+                    choices=[
+                        ui.choice(name='checkbox_without_training', label='Default diffusion'),
+                        ui.choice(name='checkbox_re_training', label='Dreambooth fine-tuning', disabled=True)
+                    ])
+                ])
 
 
 def get_source_header():

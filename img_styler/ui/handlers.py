@@ -9,6 +9,7 @@ import cv2
 import dlib
 import numpy as np
 from deepface import DeepFace
+from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
@@ -132,6 +133,8 @@ async def process(q: Q):
         await img_capture_done(q)
     elif q.args.change_theme:
         await change_theme(q)
+    elif q.args.prompt_apply:
+        await prompt_apply(q)
     await q.page.save()
 
 
@@ -255,8 +258,19 @@ async def image_upload(q: Q):
         _img = 'data:image/png;base64,{}'.format(encoded)
         q.client.current_img = _img
         facial_feature_analysis(q, local_path, "Uploaded Image")
-
     await q.page.save()
+
+
+@on('prompt_apply')
+async def prompt_apply(q: Q):
+    logger.info(f"Enable prompt.")
+    logger.info(f"Prompt value: {q.args.prompt_textbox}")
+    res_path = generate_image_with_prompt(input_img_path=q.client.source_face, prompt_txt=q.args.prompt_textbox,
+                                                                                    output_path=OUTPUT_PATH)
+
+    q.client.prompt_textbox = q.args.prompt_textbox
+    q.client.processedimg = res_path
+    await update_processed_face(q)
 
 
 @on('#capture')

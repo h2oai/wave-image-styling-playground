@@ -1,10 +1,12 @@
 [tool.poetry]
 name = "wave-image-styler"
-version = "0.2.0"
+version = "0.3.1"
 license = "MIT"
-description = "App for styling potraits using Machine learning and computer vision"
+description = "App for styling portraits (Portrait Booth) using Machine learning and computer vision"
 authors = [
   "Pramit Choudhary <pchoudha@uci.edu>",
+  "Dilith Jayakody <dilithjay@gmail.com>",
+  "Michal Malohlava <michal@h2o.ai>",
   "Srinivas Neppalli <srinivas.neppalli@h2o.ai>"
 ]
 readme = "README.md"
@@ -21,9 +23,10 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "3.7.1"
+python = "3.7.10"
 h2o-wave = "^0.22.0"
 torch = "^1.10.2"
+diffusers = "0.4.1"
 torchvision = "^0.11.3"
 numpy = "^1.21.6"
 Pillow = "^9.0.1"
@@ -38,6 +41,8 @@ cmake = "^3.22.2"
 dlib = "^19.23.0"
 requests = "^2.27.1"
 deepface = "^0.0.73"
+ftfy = "^6.1.1"
+transformers = "^4.23.1"
 ninja = "^1.10.2"
 
 [tool.poetry.dev-dependencies]
@@ -49,7 +54,7 @@ jupyterlab-vim = { version = "^0.14.5", allow-prereleases = true }
 jupyterlab-code-formatter = { version = "^1.4.10", allow-prereleases = true }
 
 [tool.black]
-line-length = 88
+line-length = 120
 skip-string-normalization = true
 target-version = ['py37.1']
 include = '\.pyi?$'
@@ -73,7 +78,7 @@ exclude = '''
 '''
 
 [tool.isort]
-line_length = 88
+line_length = 120
 multi_line_output = 3
 
 [build-system]
