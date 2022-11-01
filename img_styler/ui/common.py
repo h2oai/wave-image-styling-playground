@@ -33,7 +33,7 @@ async def update_faces(q: Q, save=False):
         q.page['source_face'] = get_source_face_card(
             img2buf(q.client.source_face), type='jpg', height='520px', width='500px'
         )
-        if q.client.task_choice == 'C':
+        if q.client.task_choice == 'D':
             q.page['prompt_form'] = ui.form_card(ui.box('main', order=1, height='200px', width='900px'), items=[
                 ui.copyable_text(name='prompt_textbox', label='Prompt (Express your creativity)', multiline=True, value=txt_val),
                 ui.button(name='prompt_apply', label='Apply')])
@@ -58,7 +58,7 @@ async def update_processed_face(q: Q, save=False):
         q.page['processed_face'] = get_processed_face_card(
             img_buf, title="Fixed Image", type='jpg', layout_pos='middle_right', order=2
         )
-        if q.client.task_choice == 'C':
+        if q.client.task_choice == 'D':
             q.page['prompt_form'] = ui.form_card(ui.box('main', order=1, height='200px', width='900px'), items=[
                 ui.textbox(name='prompt_textbox', label='Prompt', multiline=True, value=q.client.prompt_textbox),
                 ui.button(name='prompt_apply', label='Apply')])
