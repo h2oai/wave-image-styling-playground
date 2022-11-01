@@ -3,7 +3,7 @@ sync_attr_models = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-
 sync_stgan_nada_models = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-styler/public/models/stylegan_nada/ ./models/stylegan_nada/
 sync_gfpgan_models = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-styler/public/models/gfpgan/ ./models/gfpgan/
 download_ffhq_model = wget -P  ./models/ https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl
-download_sd_model  = s3cmd get --recursive --skip-existing s3://h2o-model-gym/models/stable-diffusion-v1-4/ ./models/stable_diffusion_v1_4/
+download_sd_model  = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-styler/public/models/stable-diffusion-v1-4/ ./models/stable_diffusion_v1_4/
 
 .PHONY: download_models
 
