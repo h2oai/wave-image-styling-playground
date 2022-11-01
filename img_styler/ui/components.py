@@ -386,9 +386,10 @@ def get_controls(q: Q):
                     trigger=True,
                     choices=task_choices,
                     tooltip="There are few options available. \
-                        Image Styling (Transfer a style to an original image) and \
-                        Image Editing (Edit and transform an existing image).,\
-                        Image Prompt (Generate image via prompt)."
+                        Image Styling (Transfer a style to an original image), \
+                        Image Editing (Edit and transform an existing image), and \
+                        Fix Resolution (Increase resolution and fix artifacts in an existing image), and \
+                        Image Prompt (Generate image via prompt)"
                     ),
                     ui.dropdown(
                     name='source_face',
