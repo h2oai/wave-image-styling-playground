@@ -220,6 +220,15 @@ def get_controls(q: Q):
                     tooltip='Select a source face to be enhanced.',
                     trigger=True,
                 ),
+                ui.buttons(
+                    [
+                        ui.button(
+                            name='upload_image_dialog', label='Upload', primary=True
+                        ),
+                        ui.button(name='#capture', label='Capture', primary=True),
+                    ],
+                    justify='end',
+                ),
                 ui.buttons([
                     ui.button('fix_resolution', 'Fix Resolution', primary=True)
                 ], justify='end'),
