@@ -76,6 +76,8 @@ async def process(q: Q):
     if q.args.source_face and q.client.source_face != q.args.source_face:
         q.client.source_face = q.args.source_face
         reset_edit_results(q)
+    if q.args.source_style:
+        q.client.source_style = q.args.source_style
     if q.args.style_face:
         q.client.style_face = q.args.style_face
     if q.args.z_low:
