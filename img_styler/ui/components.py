@@ -53,9 +53,9 @@ def get_user_title(q: Q):
 
 def get_controls(q: Q):
     task_choices = [
-        ui.choice('A', 'Image Styling'),
-        ui.choice('B', 'Image Editing'),
-        ui.choice('C', 'Fix Resolution'),
+        ui.choice('A', 'Fix Resolution'),
+        ui.choice('B', 'Image Styling'),
+        ui.choice('C', 'Image Editing'),
         ui.choice('D', 'Image prompt')]
     task_choice_dropdown = ui.dropdown(
         name='task_dropdown',
@@ -201,7 +201,7 @@ def get_controls(q: Q):
             value=q.client.yaw if q.client.yaw else 0,
         ),
     ]
-    if q.client.task_choice == 'A':
+    if q.client.task_choice == 'B':
         # Includes styling controls.
         return ui.form_card(
             box=ui.box(
@@ -279,7 +279,7 @@ def get_controls(q: Q):
                 ),
             ],
         )
-    elif q.client.task_choice == 'B':
+    elif q.client.task_choice == 'C':
         style_names = {
             'none': 'None', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
             'disney_princess': 'Disney Princess', 'edvard_munch': 'Edvard Munch', 'elf': 'Elf', 'ghibli': 'Ghibli',
@@ -345,7 +345,7 @@ def get_controls(q: Q):
             for _index, _item in enumerate(landmark_controls)
         ]
         return edit_controls
-    elif q.client.task_choice == 'C': # Fix Resolution
+    elif q.client.task_choice == 'A': # Fix Resolution
         img_name_parts = q.client.source_face.split('/')[-1].split('.')
         new_img_name = '.'.join(img_name_parts[: -1]) + '_fixed.' + img_name_parts[-1]
         disabled = q.client.processedimg is None
