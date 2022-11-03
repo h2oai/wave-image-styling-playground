@@ -24,7 +24,7 @@ async def update_faces(q: Q, save=False):
     if not q.client.source_face or not os.path.exists(q.client.source_face):
         q.client.source_face = random.choice(q.app.source_faces)
 
-    if q.client.task_choice == 'A':
+    if q.client.task_choice == 'B':
         q.page['source_face'] = get_source_face_card(
             img2buf(q.client.source_face), type='jpg'
         )
@@ -39,7 +39,7 @@ async def update_faces(q: Q, save=False):
                 ui.button(name='prompt_apply', label='Apply')])
 
     del q.page['style_face']
-    if q.client.task_choice == 'A':
+    if q.client.task_choice == 'B':
         q.page['style_face'] = get_style_face_card(
             img2buf(q.client.style_face), type='jpg'
         )
@@ -52,7 +52,7 @@ async def update_processed_face(q: Q, save=False):
     del q.page['processed_face']
     del q.page['prompt_form']
 
-    if q.client.task_choice == 'A':
+    if q.client.task_choice == 'B':
         q.page['processed_face'] = get_processed_face_card(img_buf, type='jpg')
     else:
         q.page['processed_face'] = get_processed_face_card(
@@ -80,7 +80,7 @@ async def update_controls(q: Q, save=False):
 
 async def update_gif(q: Q):
     del q.page['processed_gif']
-    if q.client.task_choice == 'B':
+    if q.client.task_choice == 'C':
         if q.client.gif_path:
             with open(q.client.gif_path, "rb") as gif_file:
                 img_buf = base64.b64encode(gif_file.read()).decode("utf-8")

@@ -53,9 +53,9 @@ def get_user_title(q: Q):
 
 def get_controls(q: Q):
     task_choices = [
-        ui.choice('A', 'Image Styling'),
-        ui.choice('B', 'Image Editing'),
-        ui.choice('C', 'Fix Resolution'),
+        ui.choice('A', 'Fix Resolution'),
+        ui.choice('B', 'Image Styling'),
+        ui.choice('C', 'Image Editing'),
         ui.choice('D', 'Image prompt')]
     task_choice_dropdown = ui.dropdown(
         name='task_dropdown',
@@ -65,9 +65,9 @@ def get_controls(q: Q):
         trigger=True,
         choices=task_choices,
         tooltip="There are few options available. \
+            Fix Resolution (Increase resolution and fix artifacts in an existing image), \
             Image Styling (Transfer a style to an original image), \
             Image Editing (Edit and transform an existing image), and \
-            Fix Resolution (Increase resolution and fix artifacts in an existing image), and \
             Image Prompt (Generate image via prompt)",
     )
     landmark_controls = [
@@ -201,7 +201,45 @@ def get_controls(q: Q):
             value=q.client.yaw if q.client.yaw else 0,
         ),
     ]
-    if q.client.task_choice == 'A':
+    if q.client.task_choice == 'A': # Fix Resolution
+        img_name_parts = q.client.source_face.split('/')[-1].split('.')
+        new_img_name = '.'.join(img_name_parts[: -1]) + '_fixed.' + img_name_parts[-1]
+        disabled = q.client.processedimg is None
+        return ui.form_card(
+            box=ui.box(zone='side_controls', order=1),
+            items=[
+                task_choice_dropdown,
+                ui.dropdown(
+                    name='source_face',
+                    label='Source Face',
+                    choices=[
+                        ui.choice(name=x, label=os.path.basename(x))
+                        for x in q.app.source_faces
+                    ],
+                    value=q.client.source_face,
+                    tooltip='Select a source face to be enhanced.',
+                    trigger=True,
+                ),
+                ui.buttons(
+                    [
+                        ui.button(
+                            name='upload_image_dialog', label='Upload', primary=True
+                        ),
+                        ui.button(name='#capture', label='Capture', primary=True),
+                    ],
+                    justify='end',
+                ),
+                ui.buttons([
+                    ui.button('fix_resolution', 'Fix Resolution', primary=True)
+                ], justify='end'),
+                ui.separator(),
+                ui.textbox('img_name', 'Add fixed image to list', value=new_img_name, disabled=disabled),
+                ui.buttons([
+                    ui.button('save_img_to_list', 'Add', primary=True, disabled=disabled)
+                ], justify='end'),
+            ]
+        )
+    elif q.client.task_choice == 'B':
         # Includes styling controls.
         return ui.form_card(
             box=ui.box(
@@ -279,7 +317,7 @@ def get_controls(q: Q):
                 ),
             ],
         )
-    elif q.client.task_choice == 'B':
+    elif q.client.task_choice == 'C':
         style_names = {
             'none': 'None', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
             'disney_princess': 'Disney Princess', 'edvard_munch': 'Edvard Munch', 'elf': 'Elf', 'ghibli': 'Ghibli',
@@ -345,35 +383,6 @@ def get_controls(q: Q):
             for _index, _item in enumerate(landmark_controls)
         ]
         return edit_controls
-    elif q.client.task_choice == 'C': # Fix Resolution
-        img_name_parts = q.client.source_face.split('/')[-1].split('.')
-        new_img_name = '.'.join(img_name_parts[: -1]) + '_fixed.' + img_name_parts[-1]
-        disabled = q.client.processedimg is None
-        return ui.form_card(
-            box=ui.box(zone='side_controls', order=1),
-            items=[
-                task_choice_dropdown,
-                ui.dropdown(
-                    name='source_face',
-                    label='Source Face',
-                    choices=[
-                        ui.choice(name=x, label=os.path.basename(x))
-                        for x in q.app.source_faces
-                    ],
-                    value=q.client.source_face,
-                    tooltip='Select a source face to be enhanced.',
-                    trigger=True,
-                ),
-                ui.buttons([
-                    ui.button('fix_resolution', 'Fix Resolution', primary=True)
-                ], justify='end'),
-                ui.separator(),
-                ui.textbox('img_name', 'Add fixed image to list', value=new_img_name, disabled=disabled),
-                ui.buttons([
-                    ui.button('save_img_to_list', 'Add', primary=True, disabled=disabled)
-                ], justify='end'),
-            ]
-        )
     else: # Option: 'D' Image Prompt
         return ui.form_card(box=ui.box(
                 zone='side_controls',

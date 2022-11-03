@@ -418,7 +418,7 @@ async def apply(q: Q):
     new_img = None
     style_type = ''
     file_name = ''
-    if q.client.task_choice == 'B':  # Image Editing
+    if q.client.task_choice == 'C':  # Image Editing
         q.client.source_style = q.args.source_style or 'style_none'
         q.client.age_slider = q.args.age_slider if q.args.age_slider else 0
         q.client.eye_distance = q.args.eye_distance if q.args.eye_distance else 0
@@ -496,7 +496,7 @@ async def apply(q: Q):
             logger.debug(f"Saving to {edit_img_lc}")
             edit_img_lc_path = Path(edit_img_lc)
             np.savez(edit_img_lc_path, x=mlc)
-    elif q.client.task_choice == 'A':  # Image Styling
+    elif q.client.task_choice == 'B':  # Image Styling
         # Check if precomputed latent space for source img exists
         if source_img_proj_path.is_file() & style_img_proj_path.is_file():
             swap_idxs = (z_low, z_high)
