@@ -59,11 +59,14 @@ async def update_processed_face(q: Q, save=False):
             img_buf, title="Fixed Image", type='jpg', layout_pos='middle_right', order=2
         )
         if q.client.task_choice == 'D':
-            q.page['prompt_form'] = ui.form_card(ui.box('main', order=1, height='200px', width='900px'), items=[
+            q.page['prompt_form'] = ui.form_card(ui.box('main', order=1, height='320px', width='900px'), items=[
                 ui.checkbox(name='prompt_use_source_img', label='Use source image',
                                     value=True, tooltip='Image-to-Image text-guided diffusion is applied by default.\
                                         If un-checked, default Text-to-Image diffusion is used.'),
                 ui.textbox(name='prompt_textbox', label='Prompt', multiline=True, value=q.client.prompt_textbox),
+                ui.expander(name='expander', label='Settings', items=[
+                        ui.slider(name='diffusion_n_steps', label='Steps', min=10, max=150, value=q.client.diffusion_n_steps,
+                                        tooltip='No of steps for image synthesis.')]),
                 ui.button(name='prompt_apply', label='Apply')])
     if save:
         await q.page.save()

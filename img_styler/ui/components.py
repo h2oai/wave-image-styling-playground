@@ -420,10 +420,11 @@ def get_controls(q: Q):
                     justify='end',
                     ),
                     ui.choice_group(name='choice_group_prompt', label='Options', value='checkbox_without_training',
-                    choices=[
-                        ui.choice(name='checkbox_without_training', label='Default diffusion'),
-                        ui.choice(name='checkbox_re_training', label='Dreambooth fine-tuning', disabled=True)
-                    ])
+                        choices=[
+                            ui.choice(name='checkbox_without_training', label='Default diffusion'),
+                            ui.choice(name='checkbox_re_training', label='Dreambooth fine-tuning', disabled=True)
+                        ]
+                    )
                 ])
 
 
