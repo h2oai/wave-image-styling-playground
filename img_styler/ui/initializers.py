@@ -29,6 +29,9 @@ async def custom_client_init(q: Q):
     q.client.task_choice = 'A'
     q.client.z_low = 7
     q.client.z_high = 14
+    q.client.diffusion_n_steps = 50
+    q.client.prompt_guidance_scale = 7.5
+    q.client.prompt_use_source_img = True
 
 
 async def initialize_app(q: Q):

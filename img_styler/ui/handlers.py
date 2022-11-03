@@ -1,36 +1,25 @@
 import base64
 import io
-from io import BytesIO
 import os
+from io import BytesIO
 from pathlib import Path
-from GFPGAN.inference_gfpgan import init_gfpgan, restore_image
 
 import cv2
 import dlib
 import numpy as np
 from deepface import DeepFace
-from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
-from ..caller import (
-    apply_projection,
-    generate_gif,
-    generate_projection,
-    generate_style_frames,
-    synthesize_new_img
-)
+from GFPGAN.inference_gfpgan import init_gfpgan, restore_image
+
+from ..caller import apply_projection, generate_gif, generate_projection, generate_style_frames, synthesize_new_img
+from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from ..latent_editor import edit_image, load_latent_vectors
 from ..utils.dataops import buf2img, get_files_in_dir, remove_file
 from .capture import capture_img, draw_boundary, html_str, js_schema
-from .common import (
-    progress_generate_gif,
-    update_controls,
-    update_faces,
-    update_gif,
-    update_processed_face
-)
+from .common import progress_generate_gif, update_controls, update_faces, update_gif, update_processed_face
 from .components import get_header, get_meta, get_user_title
 
 PRE_COMPUTED_PROJECTION_PATH = "./z_output"
@@ -268,18 +257,23 @@ async def prompt_apply(q: Q):
     logger.info(f"Enable prompt.")
     logger.info(f"Prompt value: {q.args.prompt_textbox}")
     logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
+    logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
     if q.args.prompt_use_source_img:
         res_path = generate_image_with_prompt(input_img_path=q.client.source_face, prompt_txt=q.args.prompt_textbox,
                                                                                     n_steps=q.args.diffusion_n_steps,
+                                                                                    guidance_scale=q.args.prompt_guidance_scale,
                                                                                     output_path=OUTPUT_PATH)
     else: # Don't initialize with source image
         res_path = generate_image_with_prompt(prompt_txt=q.args.prompt_textbox,
                                                                             n_steps=q.args.diffusion_n_steps,
+                                                                            guidance_scale=q.args.prompt_guidance_scale,
                                                                             output_path=OUTPUT_PATH)
 
     q.client.prompt_textbox = q.args.prompt_textbox
     q.client.diffusion_n_steps = q.args.diffusion_n_steps
+    q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
     q.client.processedimg = res_path
+    q.client.prompt_use_source_img = q.args.prompt_use_source_img
     await update_processed_face(q)
 
 
