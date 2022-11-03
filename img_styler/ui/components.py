@@ -16,7 +16,7 @@ def get_meta(q: Q):
 def get_header(q: Q):
     return ui.header_card(
         box="header",
-        title="Image Styling playground",
+        title="Image Styling Art Studio",
         subtitle="Style your images and have fun",
         image=q.app.logo_path,
         items=[
