@@ -7,7 +7,7 @@ import numpy as np
 import os
 import torch
 from basicsr.utils import imwrite
-from gfpgan import GFPGANer
+from .utils import GFPGANer
 
 
 def init_gfpgan():
@@ -38,7 +38,7 @@ def init_gfpgan():
     url = 'https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth'
 
     # determine model paths
-    model_path = os.path.join(os.path.dirname(__file__), '../models/gfpgan', model_name + '.pth')
+    model_path = os.path.join(os.path.dirname(__file__), '../../models/gfpgan', model_name + '.pth')
     if not os.path.isfile(model_path):
         model_path = os.path.join('gfpgan/weights', model_name + '.pth')
     if not os.path.isfile(model_path):

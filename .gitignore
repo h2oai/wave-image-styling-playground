@@ -140,7 +140,7 @@ dmypy.json
 
 # Models
 /models/
-/GFPGAN/gfpgan/weights/*.pth
+gfpgan/weights/*
 
 # Outputs
 z_output/
