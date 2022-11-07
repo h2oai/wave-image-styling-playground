@@ -79,6 +79,7 @@ tensorflow-estimator==2.9.0; python_version >= "3.7" and python_full_version >= 
 tensorflow-io-gcs-filesystem==0.26.0; python_version >= "3.7" and python_version < "3.11" and python_full_version >= "3.5.5"
 tensorflow==2.9.1; python_version >= "3.7" and python_full_version >= "3.5.5"
 termcolor==1.1.0; python_version >= "3.7" and python_full_version >= "3.5.5"
+toml==0.10.2; python_version >= "3.7"
 tomli==1.2.3; python_version >= "3.7"
 torch==1.10.2; python_full_version >= "3.6.2"
 torchvision==0.11.3

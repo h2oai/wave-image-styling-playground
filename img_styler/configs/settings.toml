@@ -4,6 +4,7 @@ TempDir = "var/lib/tmp/output"
 [PretrainedModels]
 modelDir = "var/lib/pretrained_models"
 modelSupported = ['ffhq.pkl']
+SDVersion = "./models/stable-diffusion-v1-5"
 
 [Scheduler]
 jobDir = "var/lib/tmp/jobs"

@@ -1,7 +1,9 @@
 import gc
 from io import BytesIO
+from pathlib import Path
 from typing import Optional
 
+import toml
 import torch
 from diffusers import (
     DDIMScheduler,
@@ -12,19 +14,24 @@ from diffusers import (
 from PIL import Image
 from torch import autocast
 
+# Load the config file to read in system settings.
+base_path = (Path(__file__).parent / "../configs/").resolve()
+print(base_path)
+app_settings = toml.load(f"{base_path}/settings.toml")
+
 
 def generate_image_with_prompt(
     input_img_path: Optional[str] = None,
     prompt_txt: str = "Face portrait",
     n_steps: int = 50,
     guidance_scale: int = 7.5,
-    sampler_type: str = "DDIM",
+    sampler_type: str = "K-LMS",
     output_path: str = None,
 ):
     # License: https://huggingface.co/spaces/CompVis/stable-diffusion-license
     torch.cuda.empty_cache()
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_path = "./models/stable_diffusion_v1_4"
+    model_path = app_settings["PretrainedModels"]["SDVersion"]
 
     # Default Scheduler K-LMS(Katherine Crowson)
     # TODO Enable ability to switch different Schedulers

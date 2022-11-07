@@ -8,9 +8,9 @@ from ..utils.dataops import get_files_in_dir
 
 
 async def custom_app_init(q: Q):  # noqa
-    q.app.source_faces = get_files_in_dir(dir_path='./images/')
+    q.app.source_faces = get_files_in_dir(dir_path="./images/")
     q.app.style_faces = q.app.source_faces
-    logger.debug('Images:')
+    logger.debug("Images:")
     for x in q.app.source_faces:
         logger.debug(x)
 
@@ -26,7 +26,7 @@ async def custom_client_init(q: Q):
     else:
         q.client.source_face = random.choice(q.app.source_faces)
     q.client.style_face = random.choice(q.app.style_faces)
-    q.client.task_choice = 'A'
+    q.client.task_choice = "A"
     q.client.z_low = 7
     q.client.z_high = 14
     q.client.diffusion_n_steps = 50
