@@ -2,21 +2,30 @@ sync_landmarks_model = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-im
 sync_attr_models = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-styler/public/models/stylegan2_attributes/ ./models/stylegan2_attributes/
 sync_stgan_nada_models = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-styler/public/models/stylegan_nada/ ./models/stylegan_nada/
 sync_gfpgan_models = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-styler/public/models/gfpgan/ ./models/gfpgan/
-download_ffhq_model = wget -P  ./models/ https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl
+download_ffhq_model = wget -nc -P ./models/ https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl
 download_sd_model  = s3cmd get --recursive --skip-existing s3://ai.h2o.wave-image-styler/public/models/stable-diffusion-v1-4/ ./models/stable_diffusion_v1_4/
 
-.PHONY: download_models
+.PHONY: download_models, download_models_haic
 
-all: download_models ## Build app
+all: download_models_haic ## Bundle app for H2O Cloud
 	h2o bundle
 
-setup: download_models ## Install dependencies
+setup: download_models ## Install dependencies for dev
 	mkdir -p var/lib/tmp/jobs
 	mkdir -p var/lib/tmp/jobs/output
 
 	python3 -m venv .venv
 	./.venv/bin/python -m pip install --upgrade pip
 	./.venv/bin/python -m pip install -r requirements_dev.txt
+
+download_models_haic:
+	mkdir -p models
+	mkdir -p models/stylegan2_attributes
+	mkdir -p models/gfpgan/
+	$(download_ffhq_model)
+	$(sync_landmarks_model)
+	$(sync_attr_models)
+	$(sync_gfpgan_models)
 
 download_models:
 	mkdir -p models

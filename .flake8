@@ -4,12 +4,7 @@ exclude =
     notebooks/
     data/
 
-# You probably noticed the peculiar default line length.
-# Black defaults to 88 characters per line, which happens to be 10% over 80.
-# This number was found to produce significantly shorter files than sticking
-# with 80 (the most popular), or even 79 (used by the standard library).
-# In general, 90-ish seems like the wise choice.
-max-line-length = 88
+max-line-length = 120
 max-complexity = 18
 select = B,C,E,F,W,T4,B9
 import-order-style = smarkets
