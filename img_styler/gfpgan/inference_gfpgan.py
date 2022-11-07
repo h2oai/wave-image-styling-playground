@@ -1,3 +1,5 @@
+# Reference: https://github.com/TencentARC/GFPGAN/blob/master/gfpgan/train.py
+
 from typing import Union
 import cv2
 from loguru import logger

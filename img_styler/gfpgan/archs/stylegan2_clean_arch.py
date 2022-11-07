@@ -1,3 +1,5 @@
+# Reference: https://github.com/TencentARC/GFPGAN/blob/master/gfpgan/archs/stylegan2_clean_arch.py
+
 import math
 import random
 import torch

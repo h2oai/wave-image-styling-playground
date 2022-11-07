@@ -1,6 +1,7 @@
+# Reference: https://github.com/TencentARC/GFPGAN/blob/master/gfpgan/__init__.py
+
 # flake8: noqa
 from .archs import *
-from .data import *
 from .models import *
 from .utils import *
 
