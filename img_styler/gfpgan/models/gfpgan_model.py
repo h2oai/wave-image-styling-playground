@@ -1,3 +1,5 @@
+# Reference: https://github.com/TencentARC/GFPGAN/blob/master/gfpgan/models/gfpgan_model.py
+
 import math
 import os.path as osp
 import torch

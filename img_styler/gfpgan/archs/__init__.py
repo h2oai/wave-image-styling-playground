@@ -1,3 +1,5 @@
+# Reference: https://github.com/TencentARC/GFPGAN/blob/master/gfpgan/archs/__init__.py
+
 import importlib
 from basicsr.utils import scandir
 from os import path as osp

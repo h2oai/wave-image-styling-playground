@@ -1,3 +1,5 @@
+# Reference: https://github.com/TencentARC/GFPGAN/blob/master/gfpgan/utils.py
+
 import cv2
 import os
 import torch
@@ -6,8 +8,6 @@ from basicsr.utils.download_util import load_file_from_url
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 from torchvision.transforms.functional import normalize
 
-from gfpgan.archs.gfpgan_bilinear_arch import GFPGANBilinear
-from gfpgan.archs.gfpganv1_arch import GFPGANv1
 from gfpgan.archs.gfpganv1_clean_arch import GFPGANv1Clean
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,33 +48,6 @@ class GFPGANer():
                 different_w=True,
                 narrow=1,
                 sft_half=True)
-        elif arch == 'bilinear':
-            self.gfpgan = GFPGANBilinear(
-                out_size=512,
-                num_style_feat=512,
-                channel_multiplier=channel_multiplier,
-                decoder_load_path=None,
-                fix_decoder=False,
-                num_mlp=8,
-                input_is_latent=True,
-                different_w=True,
-                narrow=1,
-                sft_half=True)
-        elif arch == 'original':
-            self.gfpgan = GFPGANv1(
-                out_size=512,
-                num_style_feat=512,
-                channel_multiplier=channel_multiplier,
-                decoder_load_path=None,
-                fix_decoder=True,
-                num_mlp=8,
-                input_is_latent=True,
-                different_w=True,
-                narrow=1,
-                sft_half=True)
-        elif arch == 'RestoreFormer':
-            from gfpgan.archs.restoreformer_arch import RestoreFormer
-            self.gfpgan = RestoreFormer()
         # initialize face helper
         self.face_helper = FaceRestoreHelper(
             upscale,

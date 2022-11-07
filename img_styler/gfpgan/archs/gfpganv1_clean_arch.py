@@ -1,44 +1,35 @@
+# Reference: https://github.com/TencentARC/GFPGAN/blob/master/gfpgan/archs/gfpganv1_clean_arch.py
+
 import math
 import random
 import torch
 from basicsr.utils.registry import ARCH_REGISTRY
 from torch import nn
+from torch.nn import functional as F
 
-from .gfpganv1_arch import ResUpBlock
-from .stylegan2_bilinear_arch import (ConvLayer, EqualConv2d, EqualLinear, ResBlock, ScaledLeakyReLU,
-                                      StyleGAN2GeneratorBilinear)
+from .stylegan2_clean_arch import StyleGAN2GeneratorClean
 
 
-class StyleGAN2GeneratorBilinearSFT(StyleGAN2GeneratorBilinear):
+class StyleGAN2GeneratorCSFT(StyleGAN2GeneratorClean):
     """StyleGAN2 Generator with SFT modulation (Spatial Feature Transform).
 
-    It is the bilinear version. It does not use the complicated UpFirDnSmooth function that is not friendly for
-    deployment. It can be easily converted to the clean version: StyleGAN2GeneratorCSFT.
+    It is the clean version without custom compiled CUDA extensions used in StyleGAN2.
 
     Args:
         out_size (int): The spatial size of outputs.
         num_style_feat (int): Channel number of style features. Default: 512.
         num_mlp (int): Layer number of MLP style layers. Default: 8.
         channel_multiplier (int): Channel multiplier for large networks of StyleGAN2. Default: 2.
-        lr_mlp (float): Learning rate multiplier for mlp layers. Default: 0.01.
         narrow (float): The narrow ratio for channels. Default: 1.
         sft_half (bool): Whether to apply SFT on half of the input channels. Default: False.
     """
 
-    def __init__(self,
-                 out_size,
-                 num_style_feat=512,
-                 num_mlp=8,
-                 channel_multiplier=2,
-                 lr_mlp=0.01,
-                 narrow=1,
-                 sft_half=False):
-        super(StyleGAN2GeneratorBilinearSFT, self).__init__(
+    def __init__(self, out_size, num_style_feat=512, num_mlp=8, channel_multiplier=2, narrow=1, sft_half=False):
+        super(StyleGAN2GeneratorCSFT, self).__init__(
             out_size,
             num_style_feat=num_style_feat,
             num_mlp=num_mlp,
             channel_multiplier=channel_multiplier,
-            lr_mlp=lr_mlp,
             narrow=narrow)
         self.sft_half = sft_half
 
@@ -52,7 +43,7 @@ class StyleGAN2GeneratorBilinearSFT(StyleGAN2GeneratorBilinear):
                 truncation_latent=None,
                 inject_index=None,
                 return_latents=False):
-        """Forward function for StyleGAN2GeneratorBilinearSFT.
+        """Forward function for StyleGAN2GeneratorCSFT.
 
         Args:
             styles (list[Tensor]): Sample codes of styles.
@@ -128,13 +119,43 @@ class StyleGAN2GeneratorBilinearSFT(StyleGAN2GeneratorBilinear):
             return image, None
 
 
+class ResBlock(nn.Module):
+    """Residual block with bilinear upsampling/downsampling.
+
+    Args:
+        in_channels (int): Channel number of the input.
+        out_channels (int): Channel number of the output.
+        mode (str): Upsampling/downsampling mode. Options: down | up. Default: down.
+    """
+
+    def __init__(self, in_channels, out_channels, mode='down'):
+        super(ResBlock, self).__init__()
+
+        self.conv1 = nn.Conv2d(in_channels, in_channels, 3, 1, 1)
+        self.conv2 = nn.Conv2d(in_channels, out_channels, 3, 1, 1)
+        self.skip = nn.Conv2d(in_channels, out_channels, 1, bias=False)
+        if mode == 'down':
+            self.scale_factor = 0.5
+        elif mode == 'up':
+            self.scale_factor = 2
+
+    def forward(self, x):
+        out = F.leaky_relu_(self.conv1(x), negative_slope=0.2)
+        # upsample/downsample
+        out = F.interpolate(out, scale_factor=self.scale_factor, mode='bilinear', align_corners=False)
+        out = F.leaky_relu_(self.conv2(out), negative_slope=0.2)
+        # skip
+        x = F.interpolate(x, scale_factor=self.scale_factor, mode='bilinear', align_corners=False)
+        skip = self.skip(x)
+        out = out + skip
+        return out
+
+
 @ARCH_REGISTRY.register()
-class GFPGANBilinear(nn.Module):
+class GFPGANv1Clean(nn.Module):
     """The GFPGAN architecture: Unet + StyleGAN2 decoder with SFT.
 
-    It is the bilinear version and it does not use the complicated UpFirDnSmooth function that is not friendly for
-    deployment. It can be easily converted to the clean version: GFPGANv1Clean.
-
+    It is the clean version without custom compiled CUDA extensions used in StyleGAN2.
 
     Ref: GFP-GAN: Towards Real-World Blind Face Restoration with Generative Facial Prior.
 
@@ -146,7 +167,6 @@ class GFPGANBilinear(nn.Module):
         fix_decoder (bool): Whether to fix the decoder. Default: True.
 
         num_mlp (int): Layer number of MLP style layers. Default: 8.
-        lr_mlp (float): Learning rate multiplier for mlp layers. Default: 0.01.
         input_is_latent (bool): Whether input is latent style. Default: False.
         different_w (bool): Whether to use different latent w for different layers. Default: False.
         narrow (float): The narrow ratio for channels. Default: 1.
@@ -162,13 +182,12 @@ class GFPGANBilinear(nn.Module):
             fix_decoder=True,
             # for stylegan decoder
             num_mlp=8,
-            lr_mlp=0.01,
             input_is_latent=False,
             different_w=False,
             narrow=1,
             sft_half=False):
 
-        super(GFPGANBilinear, self).__init__()
+        super(GFPGANv1Clean, self).__init__()
         self.input_is_latent = input_is_latent
         self.different_w = different_w
         self.num_style_feat = num_style_feat
@@ -189,46 +208,44 @@ class GFPGANBilinear(nn.Module):
         self.log_size = int(math.log(out_size, 2))
         first_out_size = 2**(int(math.log(out_size, 2)))
 
-        self.conv_body_first = ConvLayer(3, channels[f'{first_out_size}'], 1, bias=True, activate=True)
+        self.conv_body_first = nn.Conv2d(3, channels[f'{first_out_size}'], 1)
 
         # downsample
         in_channels = channels[f'{first_out_size}']
         self.conv_body_down = nn.ModuleList()
         for i in range(self.log_size, 2, -1):
             out_channels = channels[f'{2**(i - 1)}']
-            self.conv_body_down.append(ResBlock(in_channels, out_channels))
+            self.conv_body_down.append(ResBlock(in_channels, out_channels, mode='down'))
             in_channels = out_channels
 
-        self.final_conv = ConvLayer(in_channels, channels['4'], 3, bias=True, activate=True)
+        self.final_conv = nn.Conv2d(in_channels, channels['4'], 3, 1, 1)
 
         # upsample
         in_channels = channels['4']
         self.conv_body_up = nn.ModuleList()
         for i in range(3, self.log_size + 1):
             out_channels = channels[f'{2**i}']
-            self.conv_body_up.append(ResUpBlock(in_channels, out_channels))
+            self.conv_body_up.append(ResBlock(in_channels, out_channels, mode='up'))
             in_channels = out_channels
 
         # to RGB
         self.toRGB = nn.ModuleList()
         for i in range(3, self.log_size + 1):
-            self.toRGB.append(EqualConv2d(channels[f'{2**i}'], 3, 1, stride=1, padding=0, bias=True, bias_init_val=0))
+            self.toRGB.append(nn.Conv2d(channels[f'{2**i}'], 3, 1))
 
         if different_w:
             linear_out_channel = (int(math.log(out_size, 2)) * 2 - 2) * num_style_feat
         else:
             linear_out_channel = num_style_feat
 
-        self.final_linear = EqualLinear(
-            channels['4'] * 4 * 4, linear_out_channel, bias=True, bias_init_val=0, lr_mul=1, activation=None)
+        self.final_linear = nn.Linear(channels['4'] * 4 * 4, linear_out_channel)
 
         # the decoder: stylegan2 generator with SFT modulations
-        self.stylegan_decoder = StyleGAN2GeneratorBilinearSFT(
+        self.stylegan_decoder = StyleGAN2GeneratorCSFT(
             out_size=out_size,
             num_style_feat=num_style_feat,
             num_mlp=num_mlp,
             channel_multiplier=channel_multiplier,
-            lr_mlp=lr_mlp,
             narrow=narrow,
             sft_half=sft_half)
 
@@ -252,17 +269,15 @@ class GFPGANBilinear(nn.Module):
                 sft_out_channels = out_channels * 2
             self.condition_scale.append(
                 nn.Sequential(
-                    EqualConv2d(out_channels, out_channels, 3, stride=1, padding=1, bias=True, bias_init_val=0),
-                    ScaledLeakyReLU(0.2),
-                    EqualConv2d(out_channels, sft_out_channels, 3, stride=1, padding=1, bias=True, bias_init_val=1)))
+                    nn.Conv2d(out_channels, out_channels, 3, 1, 1), nn.LeakyReLU(0.2, True),
+                    nn.Conv2d(out_channels, sft_out_channels, 3, 1, 1)))
             self.condition_shift.append(
                 nn.Sequential(
-                    EqualConv2d(out_channels, out_channels, 3, stride=1, padding=1, bias=True, bias_init_val=0),
-                    ScaledLeakyReLU(0.2),
-                    EqualConv2d(out_channels, sft_out_channels, 3, stride=1, padding=1, bias=True, bias_init_val=0)))
+                    nn.Conv2d(out_channels, out_channels, 3, 1, 1), nn.LeakyReLU(0.2, True),
+                    nn.Conv2d(out_channels, sft_out_channels, 3, 1, 1)))
 
-    def forward(self, x, return_latents=False, return_rgb=True, randomize_noise=True):
-        """Forward function for GFPGANBilinear.
+    def forward(self, x, return_latents=False, return_rgb=True, randomize_noise=True, **kwargs):
+        """Forward function for GFPGANv1Clean.
 
         Args:
             x (Tensor): Input images.
@@ -275,12 +290,11 @@ class GFPGANBilinear(nn.Module):
         out_rgbs = []
 
         # encoder
-        feat = self.conv_body_first(x)
+        feat = F.leaky_relu_(self.conv_body_first(x), negative_slope=0.2)
         for i in range(self.log_size - 2):
             feat = self.conv_body_down[i](feat)
             unet_skips.insert(0, feat)
-
-        feat = self.final_conv(feat)
+        feat = F.leaky_relu_(self.final_conv(feat), negative_slope=0.2)
 
         # style code
         style_code = self.final_linear(feat.view(feat.size(0), -1))
