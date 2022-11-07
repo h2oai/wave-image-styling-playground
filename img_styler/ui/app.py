@@ -22,8 +22,8 @@ async def serve(q: Q):
 
     log_args(q.args)
 
-    hash = q.args['#']
-    if hash == 'home':
+    hash = q.args["#"]
+    if hash == "home":
         await home(q)
 
     # Initialization

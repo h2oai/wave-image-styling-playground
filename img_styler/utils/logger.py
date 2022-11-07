@@ -20,10 +20,10 @@ app_settings = toml.load(f"{base_path}/settings.toml")
 
 job_dir = app_settings['Scheduler']['JobDir']
 job_path = f"{job_dir}/{uuid}"
-log_filename = f"{job_path}/styleganwebapp.log"
+log_filename = f"{job_path}/image_styler.log"
 
 os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 
-logging = logging.patch(lambda record: record.update(name="StyleGANWebApp"))
+logging = logging.patch(lambda record: record.update(name="ImageStylingArtStudio"))
 logging.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 logging.add(log_filename)

@@ -69,12 +69,12 @@ document.getElementById("done").addEventListener("click", function() {
 async def capture_img(q: Q):
     events_dict = expando_to_dict(q.events)
     _img = None
-    if 'the_plot' in events_dict.keys():
+    if "the_plot" in events_dict.keys():
         if q.events.the_plot.selected:
-            q.page['capture_img'].content = f'You selected {q.events.the_plot.selected}'
-    if 'video' in events_dict.keys():
+            q.page["capture_img"].content = f"You selected {q.events.the_plot.selected}"
+    if "video" in events_dict.keys():
         _img = q.events.video.click if q.events.video.click else None
-    if 'exit' in events_dict.keys():
+    if "exit" in events_dict.keys():
         q.args.exit_camera = True
     return _img
 
@@ -82,15 +82,18 @@ async def capture_img(q: Q):
 def draw_boundary(img, x, y, w, h, text: str, image_scale=1):
     _img = Image.fromarray(img)
     draw = ImageDraw.Draw(_img)
-    pt_1 = (int(x * image_scale), int(y * image_scale),
-            int((x + w) * image_scale), int((y + h) * image_scale))
-    draw.rounded_rectangle(pt_1, outline="yellow",
-                           width=3, radius=7)
+    pt_1 = (
+        int(x * image_scale),
+        int(y * image_scale),
+        int((x + w) * image_scale),
+        int((y + h) * image_scale),
+    )
+    draw.rounded_rectangle(pt_1, outline="yellow", width=3, radius=7)
 
-    font = font_manager.FontProperties(family='sans-serif', weight='bold')
+    font = font_manager.FontProperties(family="sans-serif", weight="bold")
     file = font_manager.findfont(font)
     font = ImageFont.truetype(file, 24)
     constant = 5
-    draw.text((x+w+constant, y), text, font=font, fill='blue')
+    draw.text((x + w + constant, y), text, font=font, fill="blue")
 
     return np.array(_img)

@@ -6,8 +6,8 @@ from .layouts import get_layouts
 
 def get_meta(q: Q):
     return ui.meta_card(
-        box='',
-        title='ImageStyler',
+        box="",
+        title="ImageStyler",
         layouts=get_layouts(),
         theme="winter-is-coming" if q.user.dark_mode else "ember",
     )
@@ -35,7 +35,7 @@ def get_header(q: Q):
 
 def get_footer():
     return ui.footer_card(
-        box=ui.box('footer', order=1),
+        box=ui.box("footer", order=1),
         caption=(
             '<p>Made with 💛️ using <a href="https://h2oai.github.io/wave/",'
             ' target="_blank">Wave</a>. (c) 2022-23 H2O.ai. All rights reserved.</p>'
@@ -45,21 +45,22 @@ def get_footer():
 
 def get_user_title(q: Q):
     return ui.section_card(
-        box=ui.box(zone='title', order=1),
-        title='',
-        subtitle='',
+        box=ui.box(zone="title", order=1),
+        title="",
+        subtitle="",
     )
 
 
 def get_controls(q: Q):
     task_choices = [
-        ui.choice('A', 'Fix Resolution'),
-        ui.choice('B', 'Image Styling'),
-        ui.choice('C', 'Image Editing'),
-        ui.choice('D', 'Image prompt')]
+        ui.choice("A", "Fix Resolution"),
+        ui.choice("B", "Image Styling"),
+        ui.choice("C", "Image Editing"),
+        ui.choice("D", "Image prompt"),
+    ]
     task_choice_dropdown = ui.dropdown(
-        name='task_dropdown',
-        label='Select a styling option',
+        name="task_dropdown",
+        label="Select a styling option",
         value=q.client.task_choice,
         required=True,
         trigger=True,
@@ -73,221 +74,232 @@ def get_controls(q: Q):
     landmark_controls = [
         ui.separator(label="Modify"),
         ui.slider(
-            name='age_slider',
-            label='Age',
+            name="age_slider",
+            label="Age",
             min=-10,
             max=10,
             step=1,
             value=q.client.age_slider if q.client.age_slider else 0,
         ),
         ui.slider(
-            name='eye_distance',
-            label='Eye Distance',
+            name="eye_distance",
+            label="Eye Distance",
             min=-10,
             max=10,
             step=1,
             value=q.client.eye_distance if q.client.eye_distance else 0,
         ),
         ui.slider(
-            name='eyebrow_distance',
-            label='Eyebrow Distance',
+            name="eyebrow_distance",
+            label="Eyebrow Distance",
             min=-10,
             max=10,
             step=1,
             value=q.client.eyebrow_distance if q.client.eyebrow_distance else 0,
         ),
         ui.slider(
-            name='eye_ratio',
-            label='Eye Ratio',
+            name="eye_ratio",
+            label="Eye Ratio",
             min=-10,
             max=10,
             step=1,
             value=q.client.eye_ratio if q.client.eye_ratio else 0,
         ),
         ui.slider(
-            name='eyes_open',
-            label='Eyes Open',
+            name="eyes_open",
+            label="Eyes Open",
             min=-10,
             max=10,
             step=1,
             value=q.client.eyes_open if q.client.eyes_open else 0,
         ),
         ui.slider(
-            name='gender',
-            label='Gender',
+            name="gender",
+            label="Gender",
             min=-10,
             max=10,
             step=1,
             value=q.client.gender if q.client.gender else 0,
         ),
         ui.slider(
-            name='lip_ratio',
-            label='Lip Ratio',
+            name="lip_ratio",
+            label="Lip Ratio",
             min=-10,
             max=10,
             step=1,
             value=q.client.lip_ratio if q.client.lip_ratiolip_ratio else 0,
         ),
         ui.slider(
-            name='mouth_open',
-            label='Mouth Open',
+            name="mouth_open",
+            label="Mouth Open",
             min=-10,
             max=10,
             step=1,
             value=q.client.mouth_open if q.client.mouth_open else 0,
         ),
         ui.slider(
-            name='mouth_ratio',
-            label='Mouth Ratio',
+            name="mouth_ratio",
+            label="Mouth Ratio",
             min=-10,
             max=10,
             step=1,
             value=q.client.mouth_ratio if q.client.mouth_ratio else 0,
         ),
         ui.slider(
-            name='nose_mouth_distance',
-            label='Nose Mouth Distance',
+            name="nose_mouth_distance",
+            label="Nose Mouth Distance",
             min=-10,
             max=10,
             step=1,
             value=q.client.nose_mouth_distance if q.client.nose_mouth_distance else 0,
         ),
         ui.slider(
-            name='nose_ratio',
-            label='Nose Ratio',
+            name="nose_ratio",
+            label="Nose Ratio",
             min=-10,
             max=10,
             step=1,
             value=q.client.nose_ratio if q.client.nose_ratio else 0,
         ),
         ui.slider(
-            name='nose_tip',
-            label='Nose Tip',
+            name="nose_tip",
+            label="Nose Tip",
             min=-10,
             max=10,
             step=1,
             value=q.client.nose_tip if q.client.nose_tip else 0,
         ),
         ui.slider(
-            name='pitch',
-            label='Pitch',
+            name="pitch",
+            label="Pitch",
             min=-10,
             max=10,
             step=1,
             value=q.client.pitch if q.client.pitch else 0,
         ),
         ui.slider(
-            name='roll',
-            label='Roll',
+            name="roll",
+            label="Roll",
             min=-10,
             max=10,
             step=1,
             value=q.client.roll if q.client.roll else 0,
         ),
         ui.slider(
-            name='smile',
-            label='Smile',
+            name="smile",
+            label="Smile",
             min=-10,
             max=10,
             step=1,
             value=q.client.smile if q.client.smile else 0,
         ),
         ui.slider(
-            name='yaw',
-            label='Yaw',
+            name="yaw",
+            label="Yaw",
             min=-10,
             max=10,
             step=1,
             value=q.client.yaw if q.client.yaw else 0,
         ),
     ]
-    if q.client.task_choice == 'A': # Fix Resolution
-        img_name_parts = q.client.source_face.split('/')[-1].split('.')
-        new_img_name = '.'.join(img_name_parts[: -1]) + '_fixed.' + img_name_parts[-1]
+    if q.client.task_choice == "A":  # Fix Resolution
+        img_name_parts = q.client.source_face.split("/")[-1].split(".")
+        new_img_name = ".".join(img_name_parts[:-1]) + "_fixed." + img_name_parts[-1]
         disabled = q.client.processedimg is None
         return ui.form_card(
-            box=ui.box(zone='side_controls', order=1),
+            box=ui.box(zone="side_controls", order=1),
             items=[
                 task_choice_dropdown,
                 ui.dropdown(
-                    name='source_face',
-                    label='Source Face',
+                    name="source_face",
+                    label="Source Face",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
-                    tooltip='Select a source face to be enhanced.',
+                    tooltip="Select a source face to be enhanced.",
                     trigger=True,
                 ),
                 ui.buttons(
                     [
                         ui.button(
-                            name='upload_image_dialog', label='Upload', primary=True
+                            name="upload_image_dialog", label="Upload", primary=True
                         ),
-                        ui.button(name='#capture', label='Capture', primary=True),
+                        ui.button(name="#capture", label="Capture", primary=True),
                     ],
-                    justify='end',
+                    justify="end",
                 ),
-                ui.buttons([
-                    ui.button('fix_resolution', 'Fix Resolution', primary=True)
-                ], justify='end'),
+                ui.buttons(
+                    [ui.button("fix_resolution", "Fix Resolution", primary=True)],
+                    justify="end",
+                ),
                 ui.separator(),
-                ui.textbox('img_name', 'Add fixed image to list', value=new_img_name, disabled=disabled),
-                ui.buttons([
-                    ui.button('save_img_to_list', 'Add', primary=True, disabled=disabled)
-                ], justify='end'),
-            ]
+                ui.textbox(
+                    "img_name",
+                    "Add fixed image to list",
+                    value=new_img_name,
+                    disabled=disabled,
+                ),
+                ui.buttons(
+                    [
+                        ui.button(
+                            "save_img_to_list", "Add", primary=True, disabled=disabled
+                        )
+                    ],
+                    justify="end",
+                ),
+            ],
         )
-    elif q.client.task_choice == 'B':
+    elif q.client.task_choice == "B":
         # Includes styling controls.
         return ui.form_card(
             box=ui.box(
-                zone='side_controls',
+                zone="side_controls",
                 order=1,
             ),
             items=[
                 task_choice_dropdown,
                 ui.dropdown(
-                    name='source_face',
-                    label='Source Face',
+                    name="source_face",
+                    label="Source Face",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
-                    tooltip='Select a source face. One can upload a new source face as well.',
+                    tooltip="Select a source face. One can upload a new source face as well.",
                     trigger=True,
                 ),
                 ui.dropdown(
-                    name='style_face',
-                    label='Style Face',
+                    name="style_face",
+                    label="Style Face",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.style_faces
                     ],
                     value=q.client.style_face,
-                    tooltip='Select a style face from the provided options.',
+                    tooltip="Select a style face from the provided options.",
                     trigger=True,
                 ),
                 ui.dropdown(
-                    name='z_low',
-                    label='Z Low',
+                    name="z_low",
+                    label="Z Low",
                     choices=[
                         ui.choice(name=str(x), label=str(x)) for x in range(0, 17)
                     ],
                     value=str(q.client.z_low),
-                    tooltip='Latent space range (0-16)',
+                    tooltip="Latent space range (0-16)",
                     trigger=True,
                 ),
                 ui.dropdown(
-                    name='z_high',
-                    label='Z High',
+                    name="z_high",
+                    label="Z High",
                     choices=[
                         ui.choice(name=str(x), label=str(x)) for x in range(0, 17)
                     ],
                     value=str(q.client.z_high),
-                    tooltip='Latent space range (0-16)',
+                    tooltip="Latent space range (0-16)",
                     trigger=True,
                 ),
                 ui.text_m("**Recommended pairs for Z Low/Z High:**"),
@@ -295,86 +307,115 @@ def get_controls(q: Q):
                 ui.buttons(
                     [
                         ui.button(
-                            name='upload_image_dialog',
-                            label='Upload',
+                            name="upload_image_dialog",
+                            label="Upload",
                             primary=True,
-                            tooltip='Upload an image.',
+                            tooltip="Upload an image.",
                         ),
                         ui.button(
-                            name='#capture',
-                            label='Capture',
+                            name="#capture",
+                            label="Capture",
                             primary=True,
-                            tooltip='Upload an image using the camera.',
+                            tooltip="Upload an image using the camera.",
                         ),
                     ],
-                    justify='end',
+                    justify="end",
                 ),
                 ui.buttons(
                     [
-                        ui.button(name='apply', label='Apply', primary=True),
+                        ui.button(name="apply", label="Apply", primary=True),
                     ],
-                    justify='end',
+                    justify="end",
                 ),
             ],
         )
-    elif q.client.task_choice == 'C':
+    elif q.client.task_choice == "C":
         style_names = {
-            'none': 'None', 'anime': 'Anime', 'botero': 'Botero', 'crochet': 'Crochet', 'cubism': 'Cubism',
-            'disney_princess': 'Disney Princess', 'edvard_munch': 'Edvard Munch', 'elf': 'Elf', 'ghibli': 'Ghibli',
-            'grafitti_on_wall': 'Grafitti on Wall', 'groot': 'Groot', 'joker': 'Joker', 'marble': 'Marble',
-            'modernism': 'Modernism', 'modigliani': 'Modigliani', 'mona_lisa': 'Mona Lisa', 'oil': 'Oil',
-            'pixar': 'Pixar', 'plastic_puppet': 'Plastic Puppet', 'rick_morty': 'Rick and Morty', 'shrek': 'Shrek',
-            'simpson': 'Simpson', 'sketch': 'Sketch', 'ssj': 'Super Saiyan', 'thanos': 'Thanos', 'ukiyoe': 'Ukiyoe',
-            'van_gogh': 'Van Gogh', 'vintage_comics': 'Vintage Comics', 'werewolf': 'Werewolf',
-            'white_walker': 'White Walker', 'witcher': 'Witcher', 'zombie': 'Zombie', 'zuckerberg': 'Zuckerberg'
+            "none": "None",
+            "anime": "Anime",
+            "botero": "Botero",
+            "crochet": "Crochet",
+            "cubism": "Cubism",
+            "disney_princess": "Disney Princess",
+            "edvard_munch": "Edvard Munch",
+            "elf": "Elf",
+            "ghibli": "Ghibli",
+            "grafitti_on_wall": "Grafitti on Wall",
+            "groot": "Groot",
+            "joker": "Joker",
+            "marble": "Marble",
+            "modernism": "Modernism",
+            "modigliani": "Modigliani",
+            "mona_lisa": "Mona Lisa",
+            "oil": "Oil",
+            "pixar": "Pixar",
+            "plastic_puppet": "Plastic Puppet",
+            "rick_morty": "Rick and Morty",
+            "shrek": "Shrek",
+            "simpson": "Simpson",
+            "sketch": "Sketch",
+            "ssj": "Super Saiyan",
+            "thanos": "Thanos",
+            "ukiyoe": "Ukiyoe",
+            "van_gogh": "Van Gogh",
+            "vintage_comics": "Vintage Comics",
+            "werewolf": "Werewolf",
+            "white_walker": "White Walker",
+            "witcher": "Witcher",
+            "zombie": "Zombie",
+            "zuckerberg": "Zuckerberg",
         }
         # Includes edit controls
         edit_controls = ui.form_card(
             box=ui.box(
-                zone='side_controls',
+                zone="side_controls",
                 order=1,
             ),
             items=[
                 task_choice_dropdown,
                 ui.dropdown(
-                    name='source_face',
-                    label='Source Face',
+                    name="source_face",
+                    label="Source Face",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
                     trigger=True,
-                    tooltip='Select a source face for editing. One can upload a new source face as well.',
+                    tooltip="Select a source face for editing. One can upload a new source face as well.",
                 ),
                 ui.dropdown(
-                    name='source_style',
-                    label='Styles',
+                    name="source_style",
+                    label="Styles",
                     choices=[
-                        ui.choice(name=f'style_{x}', label=style_names[x])
+                        ui.choice(name=f"style_{x}", label=style_names[x])
                         for x in style_names
                     ],
-                    value=q.client.source_style or 'style_none',
-                    tooltip='Select a pre-configured style to adapt.',
-                    trigger = True
+                    value=q.client.source_style or "style_none",
+                    tooltip="Select a pre-configured style to adapt.",
+                    trigger=True,
                 ),
                 ui.buttons(
                     [
                         ui.button(
-                            name='upload_image_dialog', label='Upload', primary=True
+                            name="upload_image_dialog", label="Upload", primary=True
                         ),
-                        ui.button(name='#capture', label='Capture', primary=True),
+                        ui.button(name="#capture", label="Capture", primary=True),
                     ],
-                    justify='end',
+                    justify="end",
                 ),
                 ui.buttons(
                     [
-                        ui.button(name='apply', label='Apply', primary=True),
-                        ui.button(name='generate_gif', label='Generate GIF', primary=True,
-                                  disabled=(q.client.processedimg is None)),
+                        ui.button(name="apply", label="Apply", primary=True),
+                        ui.button(
+                            name="generate_gif",
+                            label="Generate GIF",
+                            primary=True,
+                            disabled=(q.client.processedimg is None),
+                        ),
                     ],
-                    justify='end',
-                )
+                    justify="end",
+                ),
             ],
         )
         start_index = 3
@@ -383,13 +424,13 @@ def get_controls(q: Q):
             for _index, _item in enumerate(landmark_controls)
         ]
         return edit_controls
-    else: # Option: 'D' Image Prompt
-        return ui.form_card(box=ui.box(
-                zone='side_controls',
-                order=1), items=[
-                    ui.dropdown(
-                    name='task_dropdown',
-                    label='Select a styling option',
+    else:  # Option: 'D' Image Prompt
+        return ui.form_card(
+            box=ui.box(zone="side_controls", order=1),
+            items=[
+                ui.dropdown(
+                    name="task_dropdown",
+                    label="Select a styling option",
                     value=q.client.task_choice,
                     required=True,
                     trigger=True,
@@ -398,59 +439,70 @@ def get_controls(q: Q):
                         Image Styling (Transfer a style to an original image), \
                         Image Editing (Edit and transform an existing image), and \
                         Fix Resolution (Increase resolution and fix artifacts in an existing image), and \
-                        Image Prompt (Generate image via prompt)"
-                    ),
-                    ui.dropdown(
-                    name='source_face',
-                    label='Source Face',
+                        Image Prompt (Generate image via prompt)",
+                ),
+                ui.dropdown(
+                    name="source_face",
+                    label="Source Face",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
                     trigger=True,
-                    tooltip='Select a source face for editing. One can upload a new source face as well.',
-                    ),
-                    ui.buttons(
+                    tooltip="Select a source face for editing. One can upload a new source face as well.",
+                ),
+                ui.buttons(
                     [
                         ui.button(
-                            name='upload_image_dialog',
-                            label='Upload',
+                            name="upload_image_dialog",
+                            label="Upload",
                             primary=True,
-                            tooltip='Upload an image.',
+                            tooltip="Upload an image.",
                         ),
                         ui.button(
-                            name='#capture',
-                            label='Capture',
+                            name="#capture",
+                            label="Capture",
                             primary=True,
-                            tooltip='Upload an image using the camera.',
+                            tooltip="Upload an image using the camera.",
                         ),
                     ],
-                    justify='end',
-                    ),
-                    ui.choice_group(name='choice_group_prompt', label='Options', value='checkbox_without_training',
-                        choices=[
-                            ui.choice(name='checkbox_without_training', label='Default diffusion'),
-                            ui.choice(name='checkbox_re_training', label='Dreambooth fine-tuning', disabled=True)
-                        ]
-                    )
-                ])
+                    justify="end",
+                ),
+                ui.choice_group(
+                    name="choice_group_prompt",
+                    label="Options",
+                    value="checkbox_without_training",
+                    choices=[
+                        ui.choice(
+                            name="checkbox_without_training", label="Default diffusion"
+                        ),
+                        ui.choice(
+                            name="checkbox_re_training",
+                            label="Dreambooth fine-tuning",
+                            disabled=True,
+                        ),
+                    ],
+                    tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
+                ),
+            ],
+        )
 
 
 def get_source_header():
     return ui.section_card(
-        box=ui.box(zone='middle_left', order=1, height='45px'),
-        title='Source Face',
-        subtitle='',
+        box=ui.box(zone="middle_left", order=1, height="45px"),
+        title="Source Face",
+        subtitle="",
         items=[
             ui.dropdown(
-                name='source_face',
-                label='',
+                name="source_face",
+                label="",
                 choices=[
                     ui.choice(name=x, label=x)
-                    for x in ['one.jpg', 'two.jpg', 'three.jpg']
+                    for x in ["one.jpg", "two.jpg", "three.jpg"]
                 ],
-                value='one.jpg',
+                value="one.jpg",
                 trigger=True,
             )
         ],
@@ -459,28 +511,28 @@ def get_source_header():
 
 def get_style_header():
     return ui.section_card(
-        box=ui.box(zone='middle_right', order=1, height='45px'),
-        title='Style Face',
-        subtitle='',
+        box=ui.box(zone="middle_right", order=1, height="45px"),
+        title="Style Face",
+        subtitle="",
         items=[
             ui.dropdown(
-                name='style_face',
-                label='',
+                name="style_face",
+                label="",
                 choices=[
                     ui.choice(name=x, label=x)
-                    for x in ['one.jpg', 'two.jpg', 'three.jpg']
+                    for x in ["one.jpg", "two.jpg", "three.jpg"]
                 ],
-                value='one.jpg',
+                value="one.jpg",
                 trigger=True,
             )
         ],
     )
 
 
-def get_source_face_card(image, type, height: str = '420px', width: str = '400px'):
+def get_source_face_card(image, type, height: str = "420px", width: str = "400px"):
     return ui.image_card(
-        box=ui.box('middle_left', order=2, height=height, width=width),
-        title='Source Face',
+        box=ui.box("middle_left", order=2, height=height, width=width),
+        title="Source Face",
         type=type,
         image=image,
     )
@@ -488,16 +540,22 @@ def get_source_face_card(image, type, height: str = '420px', width: str = '400px
 
 def get_style_face_card(image, type):
     return ui.image_card(
-        box=ui.box('middle_right', order=2, height='420px', width='400px'),
-        title='Style Face',
+        box=ui.box("middle_right", order=2, height="420px", width="400px"),
+        title="Style Face",
         type=type,
         image=image,
     )
 
 
 def get_processed_face_card(
-    image, type, layout_pos='main', order=1, title='Synthesized Image',
-    empty_msg: str = "'Apply' to generate a new face!", height='520px', width='500px'
+    image,
+    type,
+    layout_pos="main",
+    order=1,
+    title="Synthesized Image",
+    empty_msg: str = "'Apply' to generate a new face!",
+    height="520px",
+    width="500px",
 ):
     if image:
         return ui.image_card(
@@ -515,7 +573,7 @@ def get_processed_face_card(
 
 
 def get_generate_gif_progress_card(
-    layout_pos='main', order=1, title='Generated GIF', height='520px', width='500px'
+    layout_pos="main", order=1, title="Generated GIF", height="520px", width="500px"
 ):
     return ui.form_card(
         box=ui.box(layout_pos, order=order, height=height, width=width),
@@ -524,13 +582,13 @@ def get_generate_gif_progress_card(
     )
 
 
-async def get_gif_generated_card(q: Q, gif, order=1, title='Generated GIF'):
+async def get_gif_generated_card(q: Q, gif, order=1, title="Generated GIF"):
     download_path = await q.site.upload([q.client.gif_path])
     return ui.form_card(
-        box=ui.box('main', order=order, height='550px', width='500px'),
+        box=ui.box("main", order=order, height="550px", width="500px"),
         title=title,
         items=[
-            ui.image("GIF", "gif", gif, width='465px'),
-            ui.link(label=f'Download GIF', download=True, path=download_path[0])
-        ]
+            ui.image("GIF", "gif", gif, width="465px"),
+            ui.link(label=f"Download GIF", download=True, path=download_path[0]),
+        ],
     )
