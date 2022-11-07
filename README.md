@@ -1,5 +1,11 @@
 # H2O Image Styling Art Studio
-Style portraits and have fun. Styling is currently done using pre-trained Generative Adversarial Networks, https://github.com/NVlabs/stylegan2-ada-pytorch.
+Style images and have fun. 
+Currently, the Art Studio currently supports the following options for image generation,
+1. **Image restoration:** using GFP-GAN for face restoration
+2. **Image Styling:** Using StyleGAN2 with Adaptive Discriminator Augmentation
+3. **Image Editing:** For face images by editing StyleGAN2 latent space
+4. **Image Prompt:** Create art using Text-to-Image generation with Stable Diffusion
+
 
 ## Features
 - Image styling
