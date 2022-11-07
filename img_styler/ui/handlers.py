@@ -12,8 +12,6 @@ from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
-from GFPGAN.inference_gfpgan import init_gfpgan, restore_image
-
 from ..caller import (
     apply_projection,
     generate_gif,
@@ -22,6 +20,7 @@ from ..caller import (
     synthesize_new_img,
 )
 from ..image_prompt.stable_diffusion import generate_image_with_prompt
+from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
 from ..latent_editor import edit_image, load_latent_vectors
 from ..utils.dataops import buf2img, get_files_in_dir, remove_file
 from .capture import capture_img, draw_boundary, html_str, js_schema
@@ -89,7 +88,7 @@ async def process(q: Q):
         await progress_generate_gif(q)
         style_type = q.client.source_style[len("style_") :]
         q.client.gif_path = generate_gif(q.client.source_face, 15, style_type)
-    out_path = "GFPGAN/output/temp.png"
+    out_path = os.path.join(OUTPUT_PATH, "temp.png")
     if q.args.fix_resolution and (q.client.processedimg or q.client.source_face):
         q.client.restorer = q.client.restorer or init_gfpgan()
         img_path = q.client.processedimg or q.client.source_face
