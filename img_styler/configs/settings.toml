@@ -7,6 +7,6 @@ modelSupported = ['ffhq.pkl']
 SDVersion = "./models/stable-diffusion-v1-5"
 
 [Scheduler]
-jobDir = "var/lib/tmp/jobs"
+JobDir = "var/lib/tmp/jobs"
 MaxLogLines = 500
 LogLevel = "debug"

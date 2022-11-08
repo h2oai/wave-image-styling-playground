@@ -31,7 +31,7 @@ download_models:
 	mkdir -p models/stylegan2_attributes
 	mkdir -p models/stylegan_nada
 	mkdir -p models/gfpgan/
-	mkdir -p models/stable_diffusion_v1_4
+	mkdir -p models/stable-diffusion-v1-5
 	$(download_ffhq_model)
 	$(sync_landmarks_model)
 	$(sync_attr_models)
