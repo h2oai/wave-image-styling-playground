@@ -38,4 +38,4 @@ One such model that has shown impressive results is Stable Diffusion. Not only w
 
 ![M_3_glasses](https://user-images.githubusercontent.com/54039395/200601952-b1bbeda0-1e0b-40ef-9634-368a5f4898ae.png) | ![M_3_glasses_Superhero, blue glowing eyes, mask, super suit_steps=50,guidance=7 5](https://user-images.githubusercontent.com/54039395/200602228-7c68ee79-6e7d-49b5-ae3b-d62b08de6288.png) | ![Superhero, blue glowing eyes, mask, super suit_steps=50,guidance=7 5](https://user-images.githubusercontent.com/54039395/200602005-fa9cb026-e98a-41b1-aeda-f3797a63f651.png) | 
 :-------------------------:|:-------------------------:|:-------------------------:
-Original Image | Original image + Superhero, blue glowing eyes, mask, super suit. Sampler=K-LMS; Steps=50; Guidance Scale=7.5 | No source image + Superhero, blue glowing eyes, mask, super suit. Sampler=K-LMS; Steps=50; Guidance Scale=7.5
+Original Image | Original image + Prompt: Superhero, blue glowing eyes, mask, super suit. Sampler=K-LMS; Steps=50; Guidance Scale=7.5 | No source image + Prompt: Superhero, blue glowing eyes, mask, super suit. Sampler=K-LMS; Steps=50; Guidance Scale=7.5
