@@ -1,5 +1,8 @@
 # H2O Image Styling Art Studio
-Style images and have fun. 
+Style images and have fun.
+
+Web app built using `wave` SDK, Realtime Web Apps and Dashboards for Python and R, https://github.com/h2oai/wave
+
 Currently, the Art Studio currently supports the following options for image generation,
 1. **Image restoration:** using GFP-GAN for face restoration
 2. **Image Styling:** Using StyleGAN2 with Adaptive Discriminator Augmentation
