@@ -32,9 +32,16 @@ Original Image | Anime
 ![F_1_smiling_age=6](https://user-images.githubusercontent.com/54039395/200578796-ba395dbd-5947-452c-a18d-962cd34ff8d6.png) | ![F_1_smiling_anime_age=6](https://user-images.githubusercontent.com/54039395/200578808-ca5409be-f7fa-4a0e-8762-b728344a6374.png)
 Age = +6 | Anime, Age = +6
 
+## Image Restoration
+In 2021, Tencent Applied Research Center developed a model called GFP-GAN, which was capable of improving image quality and resolution, specifically of images of faces.
+![adele_crop](https://user-images.githubusercontent.com/54039395/200716049-56b88715-9edc-461d-b69d-5a3159e88a5e.png) | ![adele_crop_fixed](https://user-images.githubusercontent.com/54039395/200716067-f7da7a18-648d-4eb9-b94d-ce4d3d44d0f8.png)
+:-------------------------:|:-------------------------:
+Original Image | Restored Image
+
+
 ## Image Prompting
 The underlying model of image generators took a quick shift from GANs to transformers with the increasing popularity of transformer-based language models in recent years.
-One such model that has shown impressive results is Stable Diffusion. Not only was it capable of generating images based on text prompts, but it was also capable of altering existing images using these prompts.
+One such algorithm that has shown impressive results is Stable Diffusion. Not only was it capable of generating images based on text prompts, but it was also capable of altering existing images using these prompts.
 
 ![M_3_glasses](https://user-images.githubusercontent.com/54039395/200601952-b1bbeda0-1e0b-40ef-9634-368a5f4898ae.png) | ![M_3_glasses_Superhero, blue glowing eyes, mask, super suit_steps=50,guidance=7 5](https://user-images.githubusercontent.com/54039395/200602228-7c68ee79-6e7d-49b5-ae3b-d62b08de6288.png) | ![Superhero, blue glowing eyes, mask, super suit_steps=50,guidance=7 5](https://user-images.githubusercontent.com/54039395/200602005-fa9cb026-e98a-41b1-aeda-f3797a63f651.png) | 
 :-------------------------:|:-------------------------:|:-------------------------:
