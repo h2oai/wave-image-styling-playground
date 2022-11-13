@@ -30,6 +30,12 @@ def get_header(q: Q):
             ),
         ],
         color="transparent",
+        nav=[
+            ui.nav_group('Menu', items=[
+                ui.nav_item(name='#', label='Art Studio', icon='FormatPainter'),
+                ui.nav_item(name='#help', label='Help', icon='help'),
+            ]),
+        ]
     )
 
 
