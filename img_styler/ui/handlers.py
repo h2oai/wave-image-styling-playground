@@ -129,7 +129,9 @@ async def process(q: Q):
     await update_gif(q)
     if q.args.apply:
         await apply(q)
-    if hash == "capture":
+    if hash == "help":
+        await help(q)
+    elif hash == "capture":
         await capture(q)
     elif q.args.upload_image_dialog:
         await upload_image_dialog(q)
@@ -300,6 +302,20 @@ async def prompt_apply(q: Q):
     q.client.processedimg = res_path
     q.client.prompt_use_source_img = q.args.prompt_use_source_img
     await update_processed_face(q)
+
+
+@on("#help")
+async def help(q: Q):
+    logger.info("Help")
+    url = 'https://github.com/h2oai/wave-image-styler/blob/main/style_engineering_ebook.md'
+    q.page['meta'].script = ui.inline_script(
+        f"""
+        href = window.location.href;
+        window.open('{url}', '_blank').focus();
+        window.location.href = href.replace('#help', '');
+        """
+    )
+    await q.page.save()
 
 
 @on("#capture")
