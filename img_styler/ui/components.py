@@ -31,11 +31,14 @@ def get_header(q: Q):
         ],
         color="transparent",
         nav=[
-            ui.nav_group('Menu', items=[
-                ui.nav_item(name='#', label='Art Studio', icon='FormatPainter'),
-                ui.nav_item(name='#help', label='Help', icon='help'),
-            ]),
-        ]
+            ui.nav_group(
+                "Menu",
+                items=[
+                    ui.nav_item(name="#", label="Art Studio", icon="FormatPainter"),
+                    ui.nav_item(name="#help", label="Help", icon="help"),
+                ],
+            ),
+        ],
     )
 
 
@@ -218,13 +221,13 @@ def get_controls(q: Q):
                 task_choice_dropdown,
                 ui.dropdown(
                     name="source_face",
-                    label="Source Face",
+                    label="Source Image",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
-                    tooltip="Select a source face to be enhanced.",
+                    tooltip="Select a source image to be enhanced.",
                     trigger=True,
                 ),
                 ui.buttons(
@@ -268,13 +271,13 @@ def get_controls(q: Q):
                 task_choice_dropdown,
                 ui.dropdown(
                     name="source_face",
-                    label="Source Face",
+                    label="Source Image",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
-                    tooltip="Select a source face. One can upload a new source face as well.",
+                    tooltip="Select a source image. One can upload a new source image as well.",
                     trigger=True,
                 ),
                 ui.dropdown(
@@ -381,14 +384,14 @@ def get_controls(q: Q):
                 task_choice_dropdown,
                 ui.dropdown(
                     name="source_face",
-                    label="Source Face",
+                    label="Source Image",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
                     trigger=True,
-                    tooltip="Select a source face for editing. One can upload a new source face as well.",
+                    tooltip="Select a source image for editing. One can upload a new source image as well.",
                 ),
                 ui.dropdown(
                     name="source_style",
@@ -449,14 +452,14 @@ def get_controls(q: Q):
                 ),
                 ui.dropdown(
                     name="source_face",
-                    label="Source Face",
+                    label="Source Image",
                     choices=[
                         ui.choice(name=x, label=os.path.basename(x))
                         for x in q.app.source_faces
                     ],
                     value=q.client.source_face,
                     trigger=True,
-                    tooltip="Select a source face for editing. One can upload a new source face as well.",
+                    tooltip="Select a source image for editing. One can upload a new source image as well.",
                 ),
                 ui.buttons(
                     [
@@ -498,7 +501,7 @@ def get_controls(q: Q):
 def get_source_header():
     return ui.section_card(
         box=ui.box(zone="middle_left", order=1, height="45px"),
-        title="Source Face",
+        title="Source Image",
         subtitle="",
         items=[
             ui.dropdown(
@@ -538,7 +541,7 @@ def get_style_header():
 def get_source_face_card(image, type, height: str = "420px", width: str = "400px"):
     return ui.image_card(
         box=ui.box("middle_left", order=2, height=height, width=width),
-        title="Source Face",
+        title="Source Image",
         type=type,
         image=image,
     )
