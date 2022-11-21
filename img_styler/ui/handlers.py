@@ -22,7 +22,7 @@ from ..caller import (
 from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
 from ..latent_editor import edit_image, load_latent_vectors
-from ..utils.dataops import buf2img, get_files_in_dir, remove_file
+from ..utils.dataops import buf2img, get_files_in_dir, remove_file, img2buf
 from .capture import capture_img, draw_boundary, html_str, js_schema
 from .common import (
     progress_generate_gif,
@@ -307,8 +307,8 @@ async def prompt_apply(q: Q):
 @on("#help")
 async def help(q: Q):
     logger.info("Help")
-    url = 'https://github.com/h2oai/wave-image-styler/blob/main/style_engineering_ebook.md'
-    q.page['meta'].script = ui.inline_script(
+    url = "https://github.com/h2oai/wave-image-styler/blob/main/style_engineering_ebook.md"
+    q.page["meta"].script = ui.inline_script(
         f"""
         href = window.location.href;
         window.open('{url}', '_blank').focus();
@@ -359,18 +359,19 @@ async def capture(q: Q):
 
 
 def rotate_face(image_path: str):
-    face = dlib.load_rgb_image(image_path)
+    # face = dlib.load_rgb_image(image_path)
+    face = Image.open(image_path)
+    face = np.array(face.convert("RGB"))
     _img = cv2.rotate(face, cv2.ROTATE_90_COUNTERCLOCKWISE)
     cv2.imwrite(image_path, _img)
     # Update default path as well
     default_path = f"{image_path.rsplit('/', 1)[0]}/portrait.jpg"
     cv2.imwrite(default_path, _img)
-    buff = BytesIO()
-    pil_img = Image.fromarray(_img)
-    pil_img.save(buff, format="JPEG")
-    new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
-    new_img = f"data:image/png;base64,{new_image_encoded}"
-    return new_img
+    # buff = BytesIO()
+    # pil_img = Image.fromarray(_img)
+    # pil_img.save(buff, format="JPEG")
+    # new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+    # new_img = f"data:image/png;base64,{new_image_encoded}"
 
 
 def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
@@ -379,8 +380,9 @@ def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
     # MTCNN (performed better than RetinaFace for the sample images tried).
     # If face is not detected; it's probably b'cauz of orientation
     # Naive approach:
-    # Try rotating the image by 90 degress to find face
+    # Try rotating the image by 90 degrees to find face
     # Rotate -> ['Left', 'Right', 'Up', 'Down']
+    obj = None
     for _ in range(4):
         try:
             obj = DeepFace.analyze(
@@ -394,31 +396,38 @@ def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
         except ValueError as ve:
             logger.info(f"Face re-orientation might be needed.")
             new_img = rotate_face(img_path)
-            q.client.current_img = new_img
+            # q.client.current_img = new_img
             pass
-
+    new_img = img2buf(img_path)
+    q.client.current_img = new_img
+    new_image_encoded = None
     logger.info(f"Facial Attributes: {obj}")
-    dominant_emotion = obj["dominant_emotion"]
-    logger.info(f"Dominant emotion: {dominant_emotion}")
-    # Draw bounding box around the face
-    _im = q.client.current_img
-    _img = _im.split(",")[1]
-    base64_decoded = base64.b64decode(_img)
-    image = Image.open(io.BytesIO(base64_decoded))
-    img_np = np.array(image)
-
-    x = obj["region"]["x"]
-    y = obj["region"]["y"]
-    w = obj["region"]["w"]
-    h = obj["region"]["h"]
-    img_w_box2 = draw_boundary(img_np, x, y, w, h, text=dominant_emotion)
-    pil_img = Image.fromarray(img_w_box2)
-
-    buff = BytesIO()
-    pil_img = pil_img.convert("RGB")
-    pil_img.save(buff, format="JPEG")
-    new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
     img_format = "data:image/png;base64,"
+    if obj:
+        # if face is detected
+        dominant_emotion = obj["dominant_emotion"]
+        logger.info(f"Dominant emotion: {dominant_emotion}")
+        # Draw bounding box around the face
+        _img = q.client.current_img
+        # _img = _im.split(",")[1]
+        base64_decoded = base64.b64decode(_img)
+        image = Image.open(io.BytesIO(base64_decoded))
+        img_np = np.array(image)
+
+        x = obj["region"]["x"]
+        y = obj["region"]["y"]
+        w = obj["region"]["w"]
+        h = obj["region"]["h"]
+        img_w_box2 = draw_boundary(img_np, x, y, w, h, text=dominant_emotion)
+        pil_img = Image.fromarray(img_w_box2)
+
+        buff = BytesIO()
+        pil_img = pil_img.convert("RGB")
+        pil_img.save(buff, format="JPEG")
+        new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+    else:
+        # else proceed without as a non-portrait image
+        new_image_encoded = new_img
     # Update image
     new_image = img_format + new_image_encoded
 

@@ -7,20 +7,21 @@ from PIL import Image
 def img2buf(img_path):
     img = Image.open(img_path)
     buf = io.BytesIO()
-    img = img.convert('RGB')
-    img.save(buf, format='JPEG')
+    img = img.convert("RGB")
+    img.save(buf, format="JPEG")
     buf.seek(0)
-    img_buf = base64.b64encode(buf.read()).decode('utf-8')
+    img_buf = base64.b64encode(buf.read()).decode("utf-8")
     return img_buf
 
 
 def buf2img(img, file_name: str):
     # https://stackoverflow.com/questions/2323128/convert-string-in-base64-to-image-and-save-on-filesystem
-    _ni = img.split(",")[1]
+    img_tmp = img.split(",")
+    _ni = img_tmp[1] if len(img_tmp) > 1 else img_tmp[0]
     image_ = io.BytesIO(base64.b64decode(_ni))
     _img = Image.open(image_)
-    img = _img.convert('RGB')
-    img.save(file_name, 'JPEG', quality=95)
+    img = _img.convert("RGB")
+    img.save(file_name, "JPEG", quality=95)
 
 
 def remove_file(file_name: str):
@@ -30,12 +31,12 @@ def remove_file(file_name: str):
         pass
 
 
-def get_files_in_dir(dir_path, pattern='', ext=None):
+def get_files_in_dir(dir_path, pattern="", ext=None):
     files = []
 
     def ext_check(name):
         if ext:
-            return name.endswith(f'.{ext}')
+            return name.endswith(f".{ext}")
         return True
 
     with os.scandir(dir_path) as it:

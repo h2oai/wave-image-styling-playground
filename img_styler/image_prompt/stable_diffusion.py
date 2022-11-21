@@ -64,7 +64,7 @@ def generate_image_with_prompt(
             images = pipe(
                 prompt=prompt_txt,
                 init_image=init_image,
-                strength=0.5,
+                strength=0.75,
                 guidance_scale=guidance_scale,
                 num_inference_steps=n_steps,
             )["sample"]
