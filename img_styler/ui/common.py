@@ -67,7 +67,11 @@ async def update_processed_face(q: Q, save=False):
         q.page["processed_face"] = get_processed_face_card(img_buf, type="jpg")
     else:
         q.page["processed_face"] = get_processed_face_card(
-            img_buf, title="Generated Image", type="jpg", layout_pos="middle_right", order=2
+            img_buf,
+            title="Generated Image",
+            type="jpg",
+            layout_pos="middle_right",
+            order=2,
         )
         if q.client.task_choice == "D":
             q.page["prompt_form"] = ui.form_card(
@@ -90,6 +94,13 @@ async def update_processed_face(q: Q, save=False):
                         label="Prompt",
                         multiline=True,
                         value=q.client.prompt_textbox,
+                    ),
+                    ui.textbox(
+                        name="negative_prompt_textbox",
+                        label="Do not include",
+                        multiline=True,
+                        value=q.client.negative_prompt_textbox,
+                        tooltip="Helpful for fixing image abnormalities",
                     ),
                     ui.expander(
                         name="expander",

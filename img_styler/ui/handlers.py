@@ -282,6 +282,7 @@ async def prompt_apply(q: Q):
         res_path = generate_image_with_prompt(
             input_img_path=q.client.source_face,
             prompt_txt=q.args.prompt_textbox,
+            negative_prompt=q.args.negative_prompt_textbox,
             n_steps=q.args.diffusion_n_steps,
             guidance_scale=q.args.prompt_guidance_scale,
             sampler_type=q.args.df_sampling_dropdown,
@@ -290,6 +291,7 @@ async def prompt_apply(q: Q):
     else:  # Don't initialize with source image
         res_path = generate_image_with_prompt(
             prompt_txt=q.args.prompt_textbox,
+            negative_prompt=q.args.negative_prompt_textbox,
             n_steps=q.args.diffusion_n_steps,
             guidance_scale=q.args.prompt_guidance_scale,
             sampler_type=q.args.df_sampling_dropdown,
@@ -297,6 +299,7 @@ async def prompt_apply(q: Q):
         )
 
     q.client.prompt_textbox = q.args.prompt_textbox
+    q.client.negative_prompt_textbox = q.args.negative_prompt_textbox
     q.client.diffusion_n_steps = q.args.diffusion_n_steps
     q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
     q.client.processedimg = res_path

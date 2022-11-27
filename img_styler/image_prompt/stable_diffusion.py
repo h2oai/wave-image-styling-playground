@@ -23,6 +23,7 @@ app_settings = toml.load(f"{base_path}/settings.toml")
 def generate_image_with_prompt(
     input_img_path: Optional[str] = None,
     prompt_txt: str = "Face portrait",
+    negative_prompt: str = "",
     n_steps: int = 50,
     guidance_scale: int = 7.5,
     sampler_type: str = "K-LMS",
@@ -63,6 +64,7 @@ def generate_image_with_prompt(
         with autocast(device):
             images = pipe(
                 prompt=prompt_txt,
+                negative_prompt=negative_prompt,
                 init_image=init_image,
                 strength=0.75,
                 guidance_scale=guidance_scale,
@@ -80,6 +82,7 @@ def generate_image_with_prompt(
             # TODO Extend for multiple samples.
             images = pipe(
                 prompt=[prompt_txt] * 1,
+                negative_prompt=[negative_prompt] * 1,
                 num_inference_steps=n_steps,
                 guidance_scale=guidance_scale,
                 generator=generator,
