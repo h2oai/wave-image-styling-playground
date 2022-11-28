@@ -46,3 +46,11 @@ One such algorithm that has shown impressive results is Stable Diffusion. Not on
 ![M_3_glasses](https://user-images.githubusercontent.com/54039395/200601952-b1bbeda0-1e0b-40ef-9634-368a5f4898ae.png) | ![M_3_glasses_Superhero, blue glowing eyes, mask, super suit_steps=50,guidance=7 5](https://user-images.githubusercontent.com/54039395/200602228-7c68ee79-6e7d-49b5-ae3b-d62b08de6288.png) | ![Superhero, blue glowing eyes, mask, super suit_steps=50,guidance=7 5](https://user-images.githubusercontent.com/54039395/200602005-fa9cb026-e98a-41b1-aeda-f3797a63f651.png) | 
 :-------------------------:|:-------------------------:|:-------------------------:
 Original Image | Original image + Prompt: Superhero, blue glowing eyes, mask, super suit. Sampler=K-LMS; Steps=50; Guidance Scale=7.5 | No source image + Prompt: Superhero, blue glowing eyes, mask, super suit. Sampler=K-LMS; Steps=50; Guidance Scale=7.5
+
+#### Image 2 Image
+
+Seasons
+
+![Seattle_Original](https://user-images.githubusercontent.com/1318029/204177327-dd68a342-0616-41be-8de3-f86c071c5a46.png) | ![Seattle_winter](https://user-images.githubusercontent.com/1318029/204177567-7106a676-7107-4505-8058-f6ab8751e1d3.png) | ![Seattle_summer](https://user-images.githubusercontent.com/1318029/204177672-43875b7d-0e57-417d-a0de-7d532b7e251e.png) | ![Seattle_spring](https://user-images.githubusercontent.com/1318029/204178872-ceb4a341-32de-4c41-9ee7-3a55c88a7f76.png) |
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:
+Original Image | Seattle in Winter | Seattle in summer| Seattle in spring 
