@@ -28,12 +28,15 @@ def generate_image_with_prompt(
     guidance_scale: int = 7.5,
     sampler_type: str = "K-LMS",
     output_path: str = None,
+    seed: int = 42,
 ):
     # License: https://huggingface.co/spaces/CompVis/stable-diffusion-license
     torch.cuda.empty_cache()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model_path = app_settings["PretrainedModels"]["SDVersion"]
 
+    height = 512
+    width = 512
     # Default Scheduler K-LMS(Katherine Crowson)
     # TODO Enable ability to switch different Schedulers
     sampler = None
@@ -51,6 +54,7 @@ def generate_image_with_prompt(
             set_alpha_to_one=False,
         )
 
+    init_image = None
     if input_img_path:
         pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
             model_path, revision="fp16", torch_dtype=torch.float16
@@ -61,32 +65,34 @@ def generate_image_with_prompt(
         image_input = Image.open(input_img_path).convert("RGB")
         init_image = image_input.resize((512, 512))
 
-        with autocast(device):
-            images = pipe(
-                prompt=prompt_txt,
-                negative_prompt=negative_prompt,
-                init_image=init_image,
-                strength=0.75,
-                guidance_scale=guidance_scale,
-                num_inference_steps=n_steps,
-            )["sample"]
     else:  # Default prompt
-        generator = torch.Generator(device=device).manual_seed(42)
+        # generator = torch.Generator(device=device).manual_seed(seed)
+
         pipe = StableDiffusionPipeline.from_pretrained(
             model_path, revision="fp16", torch_dtype=torch.float16
         ).to(device)
         if sampler:
             pipe.scheduler = sampler
-        with autocast(device):
-            # One sample for now.
-            # TODO Extend for multiple samples.
-            images = pipe(
-                prompt=[prompt_txt] * 1,
-                negative_prompt=[negative_prompt] * 1,
-                num_inference_steps=n_steps,
-                guidance_scale=guidance_scale,
-                generator=generator,
-            ).images
+
+    # Generate latent in low resolution, initial random Gaussian noise
+    # https://github.com/pcuenca/diffusers-examples/blob/main/notebooks/stable-diffusion-seeds.ipynb
+    generator = torch.Generator(device=device).manual_seed(seed)
+    image_latents = torch.randn(
+        (1, pipe.unet.in_channels, height // 8, width // 8),
+        generator=generator,
+        device=device,
+    )
+
+    with autocast(device):
+        images = pipe(
+            prompt=prompt_txt,
+            negative_prompt=negative_prompt,
+            init_image=init_image,
+            strength=0.75,
+            guidance_scale=guidance_scale,
+            num_inference_steps=n_steps,
+            latents=image_latents,
+        ).images
 
     file_name = output_path + "/result.jpg"
     if output_path:

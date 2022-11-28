@@ -106,6 +106,9 @@ async def update_processed_face(q: Q, save=False):
                         name="expander",
                         label="Settings",
                         items=[
+                            ui.textbox(name="prompt_seed",
+                            label="Seed",
+                            value=q.client.prompt_seed),
                             ui.dropdown(
                                 name="df_sampling_dropdown",
                                 label="Samplers",

@@ -287,6 +287,7 @@ async def prompt_apply(q: Q):
             guidance_scale=q.args.prompt_guidance_scale,
             sampler_type=q.args.df_sampling_dropdown,
             output_path=OUTPUT_PATH,
+            seed=int(q.args.prompt_seed),
         )
     else:  # Don't initialize with source image
         res_path = generate_image_with_prompt(
@@ -296,6 +297,7 @@ async def prompt_apply(q: Q):
             guidance_scale=q.args.prompt_guidance_scale,
             sampler_type=q.args.df_sampling_dropdown,
             output_path=OUTPUT_PATH,
+            seed=int(q.args.prompt_seed),
         )
 
     q.client.prompt_textbox = q.args.prompt_textbox
@@ -304,6 +306,7 @@ async def prompt_apply(q: Q):
     q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
     q.client.processedimg = res_path
     q.client.prompt_use_source_img = q.args.prompt_use_source_img
+    q.client.prompt_seed = q.args.prompt_seed
     await update_processed_face(q)
 
 
