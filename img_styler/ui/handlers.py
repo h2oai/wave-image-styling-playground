@@ -1,6 +1,7 @@
 import base64
 import io
 import os
+import random
 from io import BytesIO
 from pathlib import Path
 
@@ -19,10 +20,10 @@ from ..caller import (
     generate_style_frames,
     synthesize_new_img,
 )
-from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
+from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from ..latent_editor import edit_image, load_latent_vectors
-from ..utils.dataops import buf2img, get_files_in_dir, remove_file, img2buf
+from ..utils.dataops import buf2img, get_files_in_dir, img2buf, remove_file
 from .capture import capture_img, draw_boundary, html_str, js_schema
 from .common import (
     progress_generate_gif,
@@ -278,6 +279,12 @@ async def prompt_apply(q: Q):
     logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
     logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
     logger.info(f"Sampler choice: {q.args.df_sampling_dropdown}")
+    random_seed = random.randint(600000000000000, 700000000000000)
+
+    if str(q.args.prompt_seed) != "None":
+        random_seed = int(q.args.prompt_seed)
+    else:
+        q.args.prompt_seed = random_seed
     if q.args.prompt_use_source_img:
         res_path = generate_image_with_prompt(
             input_img_path=q.client.source_face,
@@ -287,7 +294,7 @@ async def prompt_apply(q: Q):
             guidance_scale=q.args.prompt_guidance_scale,
             sampler_type=q.args.df_sampling_dropdown,
             output_path=OUTPUT_PATH,
-            seed=int(q.args.prompt_seed),
+            seed=random_seed,
         )
     else:  # Don't initialize with source image
         res_path = generate_image_with_prompt(
@@ -297,7 +304,7 @@ async def prompt_apply(q: Q):
             guidance_scale=q.args.prompt_guidance_scale,
             sampler_type=q.args.df_sampling_dropdown,
             output_path=OUTPUT_PATH,
-            seed=int(q.args.prompt_seed),
+            seed=random_seed,
         )
 
     q.client.prompt_textbox = q.args.prompt_textbox
@@ -306,7 +313,7 @@ async def prompt_apply(q: Q):
     q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
     q.client.processedimg = res_path
     q.client.prompt_use_source_img = q.args.prompt_use_source_img
-    q.client.prompt_seed = q.args.prompt_seed
+    q.client.prompt_seed = int(q.args.prompt_seed)
     await update_processed_face(q)
 
 
