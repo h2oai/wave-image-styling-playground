@@ -90,7 +90,7 @@ async def process(q: Q):
         style_type = q.client.source_style[len("style_") :]
         q.client.gif_path = generate_gif(q.client.source_face, 15, style_type)
     out_path = os.path.join(OUTPUT_PATH, "temp.png")
-    if q.args.fix_resolution and (q.client.processedimg or q.client.source_face):
+    if q.args.img_restoration and (q.client.processedimg or q.client.source_face):
         q.client.restorer = q.client.restorer or init_gfpgan()
         img_path = q.client.processedimg or q.client.source_face
         q.client.processedimg = out_path
