@@ -22,6 +22,7 @@ from ..caller import (
 )
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
 from ..image_prompt.stable_diffusion import generate_image_with_prompt
+from ..image_prompt.dalle_mini_model import DalleMini
 from ..latent_editor import edit_image, load_latent_vectors
 from ..utils.dataops import buf2img, get_files_in_dir, img2buf, remove_file
 from .capture import capture_img, draw_boundary, html_str, js_schema
@@ -95,6 +96,8 @@ async def process(q: Q):
         img_path = q.client.processedimg or q.client.source_face
         q.client.processedimg = out_path
         restore_image(q.client.restorer, img_path, out_path)
+    if q.args.prompt_model:
+        q.client.prompt_model = q.args.prompt_model
     if q.args.save_img_to_list:
         new_img_path = os.path.join(INPUT_PATH, q.args.img_name)
         if os.path.exists(new_img_path):
@@ -274,46 +277,67 @@ async def image_upload(q: Q):
 
 @on("prompt_apply")
 async def prompt_apply(q: Q):
-    logger.info(f"Enable prompt.")
+    logger.info("Enable prompt.")
     logger.info(f"Prompt value: {q.args.prompt_textbox}")
-    logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
-    logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
-    logger.info(f"Sampler choice: {q.args.df_sampling_dropdown}")
     random_seed = random.randint(600000000000000, 700000000000000)
 
     if str(q.args.prompt_seed) != "None":
         random_seed = int(q.args.prompt_seed)
     else:
         q.args.prompt_seed = random_seed
-    if q.args.prompt_use_source_img:
-        res_path = generate_image_with_prompt(
-            input_img_path=q.client.source_face,
-            prompt_txt=q.args.prompt_textbox,
-            negative_prompt=q.args.negative_prompt_textbox,
-            n_steps=q.args.diffusion_n_steps,
-            guidance_scale=q.args.prompt_guidance_scale,
-            sampler_type=q.args.df_sampling_dropdown,
+    if q.client.prompt_model == 'prompt_sd':
+        logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
+        logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
+        logger.info(f"Sampler choice: {q.args.df_sampling_dropdown}")
+        if q.args.prompt_use_source_img:
+            res_path = generate_image_with_prompt(
+                input_img_path=q.client.source_face,
+                prompt_txt=q.args.prompt_textbox,
+                negative_prompt=q.args.negative_prompt_textbox,
+                n_steps=q.args.diffusion_n_steps,
+                guidance_scale=q.args.prompt_guidance_scale,
+                sampler_type=q.args.df_sampling_dropdown,
+                output_path=OUTPUT_PATH,
+                seed=random_seed,
+            )
+        else:  # Don't initialize with source image
+            res_path = generate_image_with_prompt(
+                prompt_txt=q.args.prompt_textbox,
+                negative_prompt=q.args.negative_prompt_textbox,
+                n_steps=q.args.diffusion_n_steps,
+                guidance_scale=q.args.prompt_guidance_scale,
+                sampler_type=q.args.df_sampling_dropdown,
+                output_path=OUTPUT_PATH,
+                seed=random_seed,
+            )
+        q.client.negative_prompt_textbox = q.args.negative_prompt_textbox
+        q.client.diffusion_n_steps = q.args.diffusion_n_steps
+        q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
+        q.client.prompt_use_source_img = q.args.prompt_use_source_img
+    else:
+        logger.info(f"Top-K: {q.args.prompt_top_k}")
+        logger.info(f"Top-P: {q.args.prompt_top_p}")
+        logger.info(f"Temperature: {q.args.prompt_temp}")
+        logger.info(f"Condition Scale: {q.args.prompt_cond_scale}")
+        dalle_mini_obj = DalleMini()
+        res_path = dalle_mini_obj.generate_image(
+            prompt=q.args.prompt_textbox,
             output_path=OUTPUT_PATH,
             seed=random_seed,
-        )
-    else:  # Don't initialize with source image
-        res_path = generate_image_with_prompt(
-            prompt_txt=q.args.prompt_textbox,
-            negative_prompt=q.args.negative_prompt_textbox,
-            n_steps=q.args.diffusion_n_steps,
-            guidance_scale=q.args.prompt_guidance_scale,
-            sampler_type=q.args.df_sampling_dropdown,
-            output_path=OUTPUT_PATH,
-            seed=random_seed,
+            top_k=None if q.args.prompt_top_k == 'None' else int(q.args.prompt_top_k),
+            top_p=None if q.args.prompt_top_p == 'None' else float(q.args.prompt_top_k),
+            temperature=None if q.args.prompt_temp == 'None' else float(q.args.prompt_temp),
+            condition_scale=q.args.prompt_cond_scale,
         )
 
+        q.client.prompt_top_k = q.args.prompt_top_k
+        q.client.prompt_top_p = q.args.prompt_top_p
+        q.client.prompt_temp = q.args.prompt_temp
+        q.client.prompt_cond_scale = q.args.prompt_cond_scale
+
     q.client.prompt_textbox = q.args.prompt_textbox
-    q.client.negative_prompt_textbox = q.args.negative_prompt_textbox
-    q.client.diffusion_n_steps = q.args.diffusion_n_steps
-    q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
-    q.client.processedimg = res_path
-    q.client.prompt_use_source_img = q.args.prompt_use_source_img
     q.client.prompt_seed = int(q.args.prompt_seed)
+    q.client.processedimg = res_path
     await update_processed_face(q)
 
 

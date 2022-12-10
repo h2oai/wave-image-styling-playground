@@ -1,36 +1,41 @@
 # Reference: https://colab.research.google.com/github/borisdayma/dalle-mini/blob/main/tools/inference/inference_pipeline.ipynb#scrollTo=sOtoOmYsSYPz
 
 import os
+import toml
+from pathlib import Path
+from loguru import logger
+
 import numpy as np
-import random
-from PIL import Image
 import jax
 import jax.numpy as jnp
+from PIL import Image
 from dalle_mini import DalleBart, DalleBartProcessor
 from vqgan_jax.modeling_flax_vqgan import VQModel
-from loguru import logger
+
+# Load the config file to read in system settings.
+base_path = (Path(__file__).parent / "../configs/").resolve()
+app_settings = toml.load(f"{base_path}/settings.toml")
 
 
 class DalleMini:
-    def __init__(self, model_path, vqgan_path):
+    def __init__(self):
+        model_path = app_settings["PretrainedModels"]["DALLEMini"]
+        vqgan_path = app_settings["PretrainedModels"]["VQGAN"]
+
         logger.debug("Initializing models...")
         # Define models
+        self.processor = DalleBartProcessor.from_pretrained(model_path, revision=None)
+        logger.debug("DALL-E Processor model initialized.")
         self.model, self.params = DalleBart.from_pretrained(
             model_path, revision=None, dtype=jnp.float16, _do_init=False
         )
         logger.debug("DALL-E mini model initialized.")
 
-        self.processor = DalleBartProcessor.from_pretrained(model_path, revision=None)
-        logger.debug("DALL-E Processor model initialized.")
 
         self.vqgan, self.vqgan_params = VQModel.from_pretrained(
             vqgan_path, revision="e93a26e7707683d349bf5d5c41c5b0ef69b677a9", _do_init=False
         )
         logger.debug("VQGAN model initialized.")
-
-        # create a random key
-        seed = random.randint(0, 2**32 - 1)
-        self.key = jax.random.PRNGKey(seed)
 
     def p_generate(
         self, tokenized_prompt, key, top_k, top_p, temperature, condition_scale
@@ -51,6 +56,7 @@ class DalleMini:
     def generate_image(self,
                        prompt: str,
                        output_path: str,
+                       seed: int,
                        top_k=None,
                        top_p=None,
                        temperature=None,
@@ -60,13 +66,11 @@ class DalleMini:
         logger.debug(f"Prompts: {prompts}\n")
         tokenized_prompt = self.processor(prompts)
 
-        # get a new key
-        self.key, subkey = jax.random.split(self.key)
         # generate images
         logger.debug("Generating encoded image...")
         encoded_images = self.p_generate(
             tokenized_prompt,
-            subkey,
+            jax.random.PRNGKey(seed),
             top_k,
             top_p,
             temperature,
@@ -89,9 +93,6 @@ class DalleMini:
 
 
 if __name__ == "__main__":
-    dalle = DalleMini(
-        "/home/dilith/Projects/wave-image-styler/models/dalle-mini",
-        "/home/dilith/Projects/wave-image-styler/models/vqgan_imagenet_f16_16384"
-    )
+    dalle = DalleMini()
     prompt = "sunset over a lake in the mountains"
-    image_path = dalle.generate_image(prompt, "")
+    image_path = dalle.generate_image(prompt, "", 0, 0.9, 0.1, 10)

@@ -5,6 +5,8 @@ TempDir = "var/lib/tmp/output"
 modelDir = "var/lib/pretrained_models"
 modelSupported = ['ffhq.pkl']
 SDVersion = "./models/stable-diffusion-v1-5"
+DALLEMini = "./models/dalle-mini"
+VQGAN = "./models/vqgan_imagenet_f16_16384"
 
 [Scheduler]
 JobDir = "var/lib/tmp/jobs"

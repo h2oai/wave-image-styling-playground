@@ -74,9 +74,8 @@ async def update_processed_face(q: Q, save=False):
             order=2,
         )
         if q.client.task_choice == "D":
-            q.page["prompt_form"] = ui.form_card(
-                ui.box("main", order=1, height="320px", width="980px"),
-                items=[
+            if q.client.prompt_model == 'prompt_sd':
+                items = [
                     ui.inline(
                         items=[
                             ui.checkbox(
@@ -88,13 +87,9 @@ async def update_processed_face(q: Q, save=False):
                             ),
                             ui.button(name="prompt_apply", label="Apply"),
                         ]
-                    ),
-                    ui.textbox(
-                        name="prompt_textbox",
-                        label="Prompt",
-                        multiline=True,
-                        value=q.client.prompt_textbox,
-                    ),
+                    )
+                ]
+                extra_settings = [
                     ui.textbox(
                         name="negative_prompt_textbox",
                         label="Do not include",
@@ -140,8 +135,58 @@ async def update_processed_face(q: Q, save=False):
                                 tooltip="No of steps for image synthesis.",
                             ),
                         ],
-                    ),
-                ],
+                    )
+                ]
+            else:
+                items = [
+                    ui.button(name="prompt_apply", label="Apply")
+                ]
+                extra_settings = [
+                    ui.expander(
+                        name="expander",
+                        label="Settings",
+                        items=[
+                            ui.textbox(
+                                name="prompt_seed",
+                                label="Seed",
+                                value=str(q.client.prompt_seed),
+                            ),
+                            ui.textbox(
+                                name="prompt_top_k",
+                                label="Top-K",
+                                value=str(q.client.prompt_top_k),
+                            ),
+                            ui.textbox(
+                                name="prompt_top_p",
+                                label="Top-P",
+                                value=str(q.client.prompt_top_p),
+                            ),
+                            ui.textbox(
+                                name="prompt_temp",
+                                label="Temperature",
+                                value=str(q.client.prompt_temp),
+                            ),
+                            ui.slider(
+                                name="prompt_cond_scale",
+                                label="Condition Scale",
+                                min=1,
+                                max=20,
+                                value=q.client.prompt_cond_scale,
+                                tooltip="Higher the value, the closer the result is to the prompt (less diversity).",
+                            ),
+                        ],
+                    )
+                ]
+            q.page["prompt_form"] = ui.form_card(
+                ui.box("main", order=1, height="320px", width="980px"),
+                items=items + [
+                    ui.textbox(
+                        name="prompt_textbox",
+                        label="Prompt",
+                        multiline=True,
+                        value=q.client.prompt_textbox,
+                    )
+                ] + extra_settings
             )
     if save:
         await q.page.save()

@@ -478,6 +478,19 @@ def get_controls(q: Q):
                     ],
                     justify="end",
                 ),
+                ui.separator(),
+                ui.dropdown(
+                    name="prompt_model",
+                    label="Model",
+                    choices=[
+                        ui.choice(name='prompt_sd', label="Stable Diffusion"),
+                        ui.choice(name='prompt_dalle_mini', label="DALL-E mini"),
+                    ],
+                    value=q.client.prompt_model,
+                    trigger=True,
+                    tooltip="Select a model to use for prompting.",
+                ),
+            ] + ([
                 ui.choice_group(
                     name="choice_group_prompt",
                     label="Options",
@@ -494,7 +507,7 @@ def get_controls(q: Q):
                     ],
                     tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
                 ),
-            ],
+            ] if q.client.prompt_model == 'prompt_sd' else [])
         )
 
 
