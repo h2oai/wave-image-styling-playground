@@ -459,6 +459,7 @@ def get_controls(q: Q):
                     ],
                     value=q.client.source_face,
                     trigger=True,
+                    disabled=(q.client.prompt_model == "prompt_dalle_mini"),
                     tooltip="Select a source image for editing. One can upload a new source image as well.",
                 ),
                 ui.buttons(
