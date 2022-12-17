@@ -62,10 +62,10 @@ def get_user_title(q: Q):
 
 def get_controls(q: Q):
     task_choices = [
-        ui.choice("A", "Fix Resolution"),
+        ui.choice("A", "Image Restoration"),
         ui.choice("B", "Image Styling"),
         ui.choice("C", "Image Editing"),
-        ui.choice("D", "Image prompt"),
+        ui.choice("D", "Image Prompt"),
     ]
     task_choice_dropdown = ui.dropdown(
         name="task_dropdown",
@@ -75,7 +75,7 @@ def get_controls(q: Q):
         trigger=True,
         choices=task_choices,
         tooltip="There are few options available. \
-            Fix Resolution (Increase resolution and fix artifacts in an existing image), \
+            Image Restoration (Increase resolution and fix artifacts in an existing image), \
             Image Styling (Transfer a style to an original image), \
             Image Editing (Edit and transform an existing image), and \
             Image Prompt (Generate image via prompt)",
@@ -211,7 +211,7 @@ def get_controls(q: Q):
             value=q.client.yaw if q.client.yaw else 0,
         ),
     ]
-    if q.client.task_choice == "A":  # Fix Resolution
+    if q.client.task_choice == "A":  # Image Restoration
         img_name_parts = q.client.source_face.split("/")[-1].split(".")
         new_img_name = ".".join(img_name_parts[:-1]) + "_fixed." + img_name_parts[-1]
         disabled = q.client.processedimg is None
@@ -240,7 +240,7 @@ def get_controls(q: Q):
                     justify="end",
                 ),
                 ui.buttons(
-                    [ui.button("fix_resolution", "Fix Resolution", primary=True)],
+                    [ui.button("img_restoration", "Image Restoration", primary=True)],
                     justify="end",
                 ),
                 ui.separator(),
@@ -447,7 +447,7 @@ def get_controls(q: Q):
                     tooltip="There are few options available. \
                         Image Styling (Transfer a style to an original image), \
                         Image Editing (Edit and transform an existing image), and \
-                        Fix Resolution (Increase resolution and fix artifacts in an existing image), and \
+                        Image Restoration (Increase resolution and fix artifacts in an existing image), and \
                         Image Prompt (Generate image via prompt)",
                 ),
                 ui.dropdown(
@@ -459,6 +459,7 @@ def get_controls(q: Q):
                     ],
                     value=q.client.source_face,
                     trigger=True,
+                    disabled=(q.client.prompt_model == "prompt_dalle_mini"),
                     tooltip="Select a source image for editing. One can upload a new source image as well.",
                 ),
                 ui.buttons(
@@ -478,6 +479,19 @@ def get_controls(q: Q):
                     ],
                     justify="end",
                 ),
+                ui.separator(),
+                ui.dropdown(
+                    name="prompt_model",
+                    label="Model",
+                    choices=[
+                        ui.choice(name='prompt_sd', label="Stable Diffusion"),
+                        ui.choice(name='prompt_dalle_mini', label="DALL-E mini"),
+                    ],
+                    value=q.client.prompt_model,
+                    trigger=True,
+                    tooltip="Select a model to use for prompting.",
+                ),
+            ] + ([
                 ui.choice_group(
                     name="choice_group_prompt",
                     label="Options",
@@ -494,7 +508,7 @@ def get_controls(q: Q):
                     ],
                     tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
                 ),
-            ],
+            ] if q.client.prompt_model == 'prompt_sd' else [])
         )
 
 
