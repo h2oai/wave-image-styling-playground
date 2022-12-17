@@ -1,5 +1,6 @@
 # Reference: https://colab.research.google.com/github/borisdayma/dalle-mini/blob/main/tools/inference/inference_pipeline.ipynb#scrollTo=sOtoOmYsSYPz
 
+import gc
 import os
 import toml
 from pathlib import Path
@@ -88,6 +89,7 @@ class DalleMini:
         filename = os.path.join(output_path, 'result.jpg')
         img.save(filename)
         logger.debug(f"Done. Saved image to {filename}")
+        gc.collect()
 
         return filename
 
