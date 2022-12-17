@@ -275,16 +275,20 @@ async def image_upload(q: Q):
     await q.page.save()
 
 
+def check_input_value(value: str, val_type, default=None):
+    try:
+        return val_type(value)
+    except ValueError:
+        return default
+
+
 @on("prompt_apply")
 async def prompt_apply(q: Q):
     logger.info("Enable prompt.")
     logger.info(f"Prompt value: {q.args.prompt_textbox}")
     random_seed = random.randint(600000000000000, 700000000000000)
 
-    if str(q.args.prompt_seed) != "None":
-        random_seed = int(q.args.prompt_seed)
-    else:
-        q.args.prompt_seed = random_seed
+    random_seed = q.args.prompt_seed = check_input_value(q.args.prompt_seed, int, random_seed)
     if q.client.prompt_model == 'prompt_sd':
         logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
         logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
@@ -324,9 +328,9 @@ async def prompt_apply(q: Q):
             prompt=q.args.prompt_textbox,
             output_path=OUTPUT_PATH,
             seed=random_seed,
-            top_k=None if q.args.prompt_top_k == 'None' else int(q.args.prompt_top_k),
-            top_p=None if q.args.prompt_top_p == 'None' else float(q.args.prompt_top_k),
-            temperature=None if q.args.prompt_temp == 'None' else float(q.args.prompt_temp),
+            top_k=check_input_value(q.args.prompt_top_k, int),
+            top_p=check_input_value(q.args.prompt_top_p, float),
+            temperature=check_input_value(q.args.prompt_temp, float),
             condition_scale=q.args.prompt_cond_scale,
         )
 
