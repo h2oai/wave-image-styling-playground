@@ -27,9 +27,7 @@ PATH_ON_CLOUD = "/resources/venv/bin/python"
 # Check for CLOUD path, if doesn't exist set it to ./venv/bin/python
 PYTHON_PATH = "./.venv/bin/python" if os.path.isdir("./.venv/bin/") else PATH_ON_CLOUD
 logging = logging.patch(lambda record: record.update(name="ImageStylingArtStudio"))
-logging.add(
-    sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO"
-)
+logging.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
 logging.info("Additional installation steps.")
 # For tracking jobs
@@ -43,16 +41,16 @@ subprocess.check_output(shlex.split(cmd2))
 logging.info("Final Stage: Additional dependencies installed.")
 
 logging.info(f"Download pending model...")
-make_dir(f"{base_path}/models/stable_diffusion_v1_4/")
+make_dir(f"{base_path}/models/stable-diffusion-v1-5/")
 urlretrieve(
-    "https://s3.amazonaws.com/ai.h2o.wave-image-styler/public/models/stable_diffusion_v1_4.zip",
-    f"{base_path}/models/stable_diffusion_v1_4.zip",
+    "https://s3.amazonaws.com/ai.h2o.wave-image-styler/public/models/stable-diffusion-v1-5.zip",
+    f"{base_path}/models/stable-diffusion-v1-5.zip",
 )
 shutil.unpack_archive(
-    f"{base_path}/models/stable_diffusion_v1_4.zip",
+    f"{base_path}/models/stable-diffusion-v1-5.zip",
     f"{base_path}/",
 )
-os.remove(f"{base_path}/models/stable_diffusion_v1_4.zip")
+os.remove(f"{base_path}/models/stable-diffusion-v1-5.zip")
 
 make_dir(f"{base_path}/models/stylegan_nada/")
 urlretrieve(
@@ -64,11 +62,7 @@ os.remove(f"{base_path}/models/stylegan_nada.zip")
 
 # Once all dependencies are installed "Start" AutoInsights.
 logging.info("Starting Image Styler.")
-DAEMON_PATH = (
-    "./.venv/bin/uvicorn"
-    if os.path.isdir("./.venv/bin/")
-    else "/resources/venv/bin/uvicorn"
-)
+DAEMON_PATH = "./.venv/bin/uvicorn" if os.path.isdir("./.venv/bin/") else "/resources/venv/bin/uvicorn"
 cmd3 = f"{DAEMON_PATH} img_styler.ui.app:main"
 subprocess.check_output(shlex.split(cmd3))
 logging.info(f"One should never get here. Something went wrong.")

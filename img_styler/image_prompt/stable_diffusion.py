@@ -66,8 +66,6 @@ def generate_image_with_prompt(
         init_image = image_input.resize((512, 512))
 
     else:  # Default prompt
-        # generator = torch.Generator(device=device).manual_seed(seed)
-
         pipe = StableDiffusionPipeline.from_pretrained(
             model_path, revision="fp16", torch_dtype=torch.float16
         ).to(device)
