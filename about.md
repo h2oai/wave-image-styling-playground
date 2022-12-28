@@ -1,14 +1,15 @@
-**App Goal:** A fun web application for Image styling
+**App Goal:** A fun web application for an art studio
 
 **Target Audience:** Everyone
 
 **Actively Being Maintained:** Yes
 
-**Last Updated:** September, 2022
+**Last Updated:** Dec, 2022
 
 **Allows for Uploading and Using New Data:** Yes (Turn your camera on and smile)
 
 **Developed and maintained by:** Dilith Jayakody, Michal Malohlava, Pramit Choudhary, Srinivas Neppalli
 
 **Detailed Description:**
-Style portraits and have fun. Styling is currently done using pre-trained Generative Adversarial Networks, <https://github.com/NVlabs/stylegan2-ada-pytorch>.
+An art studio to capture creative ideas on canvas using different generative models.
+This application is meant for research, reproducibility and recreational only purpose with no commercialization intent.
