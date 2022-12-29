@@ -222,19 +222,14 @@ def get_controls(q: Q):
                 ui.dropdown(
                     name="source_face",
                     label="Source Image",
-                    choices=[
-                        ui.choice(name=x, label=os.path.basename(x))
-                        for x in q.app.source_faces
-                    ],
+                    choices=[ui.choice(name=x, label=os.path.basename(x)) for x in q.app.source_faces],
                     value=q.client.source_face,
                     tooltip="Select a source image to be enhanced.",
                     trigger=True,
                 ),
                 ui.buttons(
                     [
-                        ui.button(
-                            name="upload_image_dialog", label="Upload", primary=True
-                        ),
+                        ui.button(name="upload_image_dialog", label="Upload", primary=True),
                         ui.button(name="#capture", label="Capture", primary=True),
                     ],
                     justify="end",
@@ -251,11 +246,7 @@ def get_controls(q: Q):
                     disabled=disabled,
                 ),
                 ui.buttons(
-                    [
-                        ui.button(
-                            "save_img_to_list", "Add", primary=True, disabled=disabled
-                        )
-                    ],
+                    [ui.button("save_img_to_list", "Add", primary=True, disabled=disabled)],
                     justify="end",
                 ),
             ],
@@ -272,10 +263,7 @@ def get_controls(q: Q):
                 ui.dropdown(
                     name="source_face",
                     label="Source Image",
-                    choices=[
-                        ui.choice(name=x, label=os.path.basename(x))
-                        for x in q.app.source_faces
-                    ],
+                    choices=[ui.choice(name=x, label=os.path.basename(x)) for x in q.app.source_faces],
                     value=q.client.source_face,
                     tooltip="Select a source image. One can upload a new source image as well.",
                     trigger=True,
@@ -283,10 +271,7 @@ def get_controls(q: Q):
                 ui.dropdown(
                     name="style_face",
                     label="Style Face",
-                    choices=[
-                        ui.choice(name=x, label=os.path.basename(x))
-                        for x in q.app.style_faces
-                    ],
+                    choices=[ui.choice(name=x, label=os.path.basename(x)) for x in q.app.style_faces],
                     value=q.client.style_face,
                     tooltip="Select a style face from the provided options.",
                     trigger=True,
@@ -294,9 +279,7 @@ def get_controls(q: Q):
                 ui.dropdown(
                     name="z_low",
                     label="Z Low",
-                    choices=[
-                        ui.choice(name=str(x), label=str(x)) for x in range(0, 17)
-                    ],
+                    choices=[ui.choice(name=str(x), label=str(x)) for x in range(0, 17)],
                     value=str(q.client.z_low),
                     tooltip="Latent space range (0-16)",
                     trigger=True,
@@ -304,9 +287,7 @@ def get_controls(q: Q):
                 ui.dropdown(
                     name="z_high",
                     label="Z High",
-                    choices=[
-                        ui.choice(name=str(x), label=str(x)) for x in range(0, 17)
-                    ],
+                    choices=[ui.choice(name=str(x), label=str(x)) for x in range(0, 17)],
                     value=str(q.client.z_high),
                     tooltip="Latent space range (0-16)",
                     trigger=True,
@@ -385,10 +366,7 @@ def get_controls(q: Q):
                 ui.dropdown(
                     name="source_face",
                     label="Source Image",
-                    choices=[
-                        ui.choice(name=x, label=os.path.basename(x))
-                        for x in q.app.source_faces
-                    ],
+                    choices=[ui.choice(name=x, label=os.path.basename(x)) for x in q.app.source_faces],
                     value=q.client.source_face,
                     trigger=True,
                     tooltip="Select a source image for editing. One can upload a new source image as well.",
@@ -396,19 +374,14 @@ def get_controls(q: Q):
                 ui.dropdown(
                     name="source_style",
                     label="Styles",
-                    choices=[
-                        ui.choice(name=f"style_{x}", label=style_names[x])
-                        for x in style_names
-                    ],
+                    choices=[ui.choice(name=f"style_{x}", label=style_names[x]) for x in style_names],
                     value=q.client.source_style or "style_none",
                     tooltip="Select a pre-configured style to adapt.",
                     trigger=True,
                 ),
                 ui.buttons(
                     [
-                        ui.button(
-                            name="upload_image_dialog", label="Upload", primary=True
-                        ),
+                        ui.button(name="upload_image_dialog", label="Upload", primary=True),
                         ui.button(name="#capture", label="Capture", primary=True),
                     ],
                     justify="end",
@@ -428,10 +401,7 @@ def get_controls(q: Q):
             ],
         )
         start_index = 3
-        [
-            edit_controls.items.insert(start_index + _index, _item)
-            for _index, _item in enumerate(landmark_controls)
-        ]
+        [edit_controls.items.insert(start_index + _index, _item) for _index, _item in enumerate(landmark_controls)]
         return edit_controls
     else:  # Option: 'D' Image Prompt
         return ui.form_card(
@@ -450,65 +420,68 @@ def get_controls(q: Q):
                         Image Restoration (Increase resolution and fix artifacts in an existing image), and \
                         Image Prompt (Generate image via prompt)",
                 ),
-                ui.dropdown(
-                    name="source_face",
-                    label="Source Image",
-                    choices=[
-                        ui.choice(name=x, label=os.path.basename(x))
-                        for x in q.app.source_faces
-                    ],
-                    value=q.client.source_face,
-                    trigger=True,
-                    disabled=(q.client.prompt_model == "prompt_dalle_mini"),
-                    tooltip="Select a source image for editing. One can upload a new source image as well.",
-                ),
-                ui.buttons(
-                    [
-                        ui.button(
-                            name="upload_image_dialog",
-                            label="Upload",
-                            primary=True,
-                            tooltip="Upload an image.",
-                        ),
-                        ui.button(
-                            name="#capture",
-                            label="Capture",
-                            primary=True,
-                            tooltip="Upload an image using the camera.",
-                        ),
-                    ],
-                    justify="end",
-                ),
+                # ui.dropdown(
+                #     name="source_face",
+                #     label="Source Image",
+                #     choices=[
+                #         ui.choice(name=x, label=os.path.basename(x))
+                #         for x in q.app.source_faces
+                #     ],
+                #     value=q.client.source_face,
+                #     trigger=True,
+                #     disabled=(q.client.prompt_model == "prompt_dalle_mini"),
+                #     tooltip="Select a source image for editing. One can upload a new source image as well.",
+                # ),
+                # ui.buttons(
+                #     [
+                #         ui.button(
+                #             name="upload_image_dialog",
+                #             label="Upload",
+                #             primary=True,
+                #             tooltip="Upload an image.",
+                #         ),
+                #         ui.button(
+                #             name="#capture",
+                #             label="Capture",
+                #             primary=True,
+                #             tooltip="Upload an image using the camera.",
+                #         ),
+                #     ],
+                #     justify="end",
+                # ),
                 ui.separator(),
                 ui.dropdown(
                     name="prompt_model",
                     label="Model",
                     choices=[
-                        ui.choice(name='prompt_sd', label="Stable Diffusion"),
-                        ui.choice(name='prompt_dalle_mini', label="DALL-E mini"),
+                        ui.choice(name="prompt_sd", label="Stable Diffusion"),
+                        ui.choice(name="prompt_dalle_mini", label="DALL-E mini"),
                     ],
                     value=q.client.prompt_model,
                     trigger=True,
                     tooltip="Select a model to use for prompting.",
                 ),
-            ] + ([
-                ui.choice_group(
-                    name="choice_group_prompt",
-                    label="Options",
-                    value="checkbox_without_training",
-                    choices=[
-                        ui.choice(
-                            name="checkbox_without_training", label="Default diffusion"
-                        ),
-                        ui.choice(
-                            name="checkbox_re_training",
-                            label="Dreambooth fine-tuning",
-                            disabled=True,
-                        ),
-                    ],
-                    tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
-                ),
-            ] if q.client.prompt_model == 'prompt_sd' else [])
+            ]
+            + (
+                [
+                    ui.choice_group(
+                        name="choice_group_prompt",
+                        label="Options",
+                        value="checkbox_without_training",
+                        choices=[
+                            ui.choice(name="checkbox_without_training", label="Default diffusion"),
+                            ui.choice(
+                                name="checkbox_re_training",
+                                label="Dreambooth fine-tuning",
+                                disabled=True,
+                            ),
+                        ],
+                        tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
+                    ),
+                ]
+                if q.client.prompt_model == "prompt_sd"
+                else []
+            ),
         )
 
 
@@ -521,10 +494,7 @@ def get_source_header():
             ui.dropdown(
                 name="source_face",
                 label="",
-                choices=[
-                    ui.choice(name=x, label=x)
-                    for x in ["one.jpg", "two.jpg", "three.jpg"]
-                ],
+                choices=[ui.choice(name=x, label=x) for x in ["one.jpg", "two.jpg", "three.jpg"]],
                 value="one.jpg",
                 trigger=True,
             )
@@ -541,10 +511,7 @@ def get_style_header():
             ui.dropdown(
                 name="style_face",
                 label="",
-                choices=[
-                    ui.choice(name=x, label=x)
-                    for x in ["one.jpg", "two.jpg", "three.jpg"]
-                ],
+                choices=[ui.choice(name=x, label=x) for x in ["one.jpg", "two.jpg", "three.jpg"]],
                 value="one.jpg",
                 trigger=True,
             )
@@ -595,9 +562,7 @@ def get_processed_face_card(
         )
 
 
-def get_generate_gif_progress_card(
-    layout_pos="main", order=1, title="Generated GIF", height="520px", width="500px"
-):
+def get_generate_gif_progress_card(layout_pos="main", order=1, title="Generated GIF", height="520px", width="500px"):
     return ui.form_card(
         box=ui.box(layout_pos, order=order, height=height, width=width),
         title=title,
