@@ -235,18 +235,18 @@ def get_controls(q: Q):
                     justify="end",
                 ),
                 ui.buttons(
-                    [ui.button("img_restoration", "Image Restoration", primary=True)],
+                    [ui.button("img_restoration", "Apply", primary=True)],
                     justify="end",
                 ),
                 ui.separator(),
                 ui.textbox(
                     "img_name",
-                    "Add fixed image to list",
+                    "Save fixed image for future use",
                     value=new_img_name,
                     disabled=disabled,
                 ),
                 ui.buttons(
-                    [ui.button("save_img_to_list", "Add", primary=True, disabled=disabled)],
+                    [ui.button("save_img_to_list", "Save", primary=True, disabled=disabled)],
                     justify="end",
                 ),
             ],

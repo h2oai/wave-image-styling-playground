@@ -63,26 +63,27 @@ async def update_processed_face(q: Q, save=False):
     if q.client.task_choice == "B":
         q.page["processed_face"] = get_processed_face_card(img_buf, type="jpg")
     else:
-        # q.page["processed_face"] = get_processed_face_card(
-        #     img_buf,
-        #     title="Generated Image",
-        #     type="jpg",
-        #     layout_pos="middle_right",
-        #     order=2,
-        # )
+        if q.client.task_choice != "D":
+            q.page["processed_face"] = get_processed_face_card(
+                img_buf,
+                title="Generated Image",
+                type="jpg",
+                layout_pos="middle_right",
+                order=2,
+            )
         if q.client.task_choice == "D":
             if q.client.prompt_model == "prompt_sd":
                 items = [
                     ui.inline(
                         items=[
-                            ui.checkbox(
-                                name="prompt_use_source_img",
-                                label="Use source image",
-                                value=q.client.prompt_use_source_img,
-                                tooltip="Image-to-Image text-guided diffusion is applied by default.\
-                                        If un-checked, default Text-to-Image diffusion is used.",
-                            ),
-                            ui.button(name="prompt_apply", label="Apply"),
+                            # ui.checkbox(
+                            #     name="prompt_use_source_img",
+                            #     label="Use source image",
+                            #     value=q.client.prompt_use_source_img,
+                            #     tooltip="Image-to-Image text-guided diffusion is applied by default.\
+                            #             If un-checked, default Text-to-Image diffusion is used.",
+                            # ),
+                            ui.button(name="prompt_apply", label="Draw"),
                         ]
                     )
                 ]
@@ -183,6 +184,7 @@ async def update_processed_face(q: Q, save=False):
                 ]
                 + extra_settings,
             )
+            q.page["img_grid"] = ui.form_card(ui.box("bottom", order=1, height="620px", width="980px"), items=[])
     if save:
         await q.page.save()
 
