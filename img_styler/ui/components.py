@@ -1,6 +1,9 @@
 import os
+from typing import Optional
+
 from h2o_wave import Q, ui
 
+from ..utils.dataops import img2buf
 from .layouts import get_layouts
 
 
@@ -420,35 +423,6 @@ def get_controls(q: Q):
                         Image Restoration (Increase resolution and fix artifacts in an existing image), and \
                         Image Prompt (Generate image via prompt)",
                 ),
-                # ui.dropdown(
-                #     name="source_face",
-                #     label="Source Image",
-                #     choices=[
-                #         ui.choice(name=x, label=os.path.basename(x))
-                #         for x in q.app.source_faces
-                #     ],
-                #     value=q.client.source_face,
-                #     trigger=True,
-                #     disabled=(q.client.prompt_model == "prompt_dalle_mini"),
-                #     tooltip="Select a source image for editing. One can upload a new source image as well.",
-                # ),
-                # ui.buttons(
-                #     [
-                #         ui.button(
-                #             name="upload_image_dialog",
-                #             label="Upload",
-                #             primary=True,
-                #             tooltip="Upload an image.",
-                #         ),
-                #         ui.button(
-                #             name="#capture",
-                #             label="Capture",
-                #             primary=True,
-                #             tooltip="Upload an image using the camera.",
-                #         ),
-                #     ],
-                #     justify="end",
-                # ),
                 ui.separator(),
                 ui.dropdown(
                     name="prompt_model",
@@ -535,6 +509,28 @@ def get_style_face_card(image, type):
         type=type,
         image=image,
     )
+
+
+def display_grid_view(q: Q, image_paths: Optional[list] = None, type="jpg"):
+    n_rows = len(image_paths) if image_paths else 1
+    _height = int(600 / n_rows)
+    _width = int(600 / n_rows)
+    q.client.n_cards = n_rows
+    if image_paths:
+        for _index in range(n_rows):
+            _img = img2buf(image_paths[_index])
+            q.page[f"img_card_{_index}"] = ui.image_card(
+                box=ui.box("bottom", order=1, height=f"{_height}px", width=f"{_width}px"),
+                title="",
+                type=type,
+                image=_img,
+            )
+    else:
+        ui.form_card(
+            box=ui.box("bottom", order=1, height=_height, width=_width),
+            title="Generated Images",
+            items=[ui.separator(), ui.text("'Draw' to generate a new images!")],
+        )
 
 
 def get_processed_face_card(

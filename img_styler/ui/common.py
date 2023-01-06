@@ -6,6 +6,7 @@ from h2o_wave import Q, ui
 
 from ..utils.dataops import img2buf
 from .components import (
+    display_grid_view,
     get_controls,
     get_footer,
     get_generate_gif_progress_card,
@@ -54,16 +55,18 @@ async def update_faces(q: Q, save=False):
 
 
 async def update_processed_face(q: Q, save=False):
-    img_buf = img2buf(q.client.processedimg) if q.client.processedimg else None
     # Delete pages not needed.
     # It's cheap to create them.
     del q.page["processed_face"]
     del q.page["prompt_form"]
+    del q.page["img_grid"]
 
     if q.client.task_choice == "B":
+        img_buf = img2buf(q.client.processedimg) if q.client.processedimg else None
         q.page["processed_face"] = get_processed_face_card(img_buf, type="jpg")
     else:
         if q.client.task_choice != "D":
+            img_buf = img2buf(q.client.processedimg) if q.client.processedimg else None
             q.page["processed_face"] = get_processed_face_card(
                 img_buf,
                 title="Generated Image",
@@ -76,13 +79,6 @@ async def update_processed_face(q: Q, save=False):
                 items = [
                     ui.inline(
                         items=[
-                            # ui.checkbox(
-                            #     name="prompt_use_source_img",
-                            #     label="Use source image",
-                            #     value=q.client.prompt_use_source_img,
-                            #     tooltip="Image-to-Image text-guided diffusion is applied by default.\
-                            #             If un-checked, default Text-to-Image diffusion is used.",
-                            # ),
                             ui.button(name="prompt_apply", label="Draw"),
                         ]
                     )
@@ -99,6 +95,11 @@ async def update_processed_face(q: Q, save=False):
                         name="expander",
                         label="Settings",
                         items=[
+                            ui.textbox(
+                                name="no_images",
+                                label="Number of images",
+                                value=str(q.client.no_images) if q.client.no_images else str(1),
+                            ),
                             ui.textbox(
                                 name="prompt_seed",
                                 label="Seed",
@@ -184,7 +185,8 @@ async def update_processed_face(q: Q, save=False):
                 ]
                 + extra_settings,
             )
-            q.page["img_grid"] = ui.form_card(ui.box("bottom", order=1, height="620px", width="980px"), items=[])
+            # Build Image grid based on the number of images generated
+            display_grid_view(q, q.client.processedimg)
     if save:
         await q.page.save()
 

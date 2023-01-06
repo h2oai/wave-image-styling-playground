@@ -13,26 +13,14 @@ from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
-from ..caller import (
-    apply_projection,
-    generate_gif,
-    generate_projection,
-    generate_style_frames,
-    synthesize_new_img,
-)
+from ..caller import apply_projection, generate_gif, generate_projection, generate_style_frames, synthesize_new_img
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
-from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from ..image_prompt.dalle_mini_model import DalleMini
+from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from ..latent_editor import edit_image, load_latent_vectors
 from ..utils.dataops import buf2img, get_files_in_dir, img2buf, remove_file
 from .capture import capture_img, draw_boundary, html_str, js_schema
-from .common import (
-    progress_generate_gif,
-    update_controls,
-    update_faces,
-    update_gif,
-    update_processed_face,
-)
+from .common import progress_generate_gif, update_controls, update_faces, update_gif, update_processed_face
 from .components import get_header, get_meta, get_user_title
 
 PRE_COMPUTED_PROJECTION_PATH = "./z_output"
@@ -54,9 +42,7 @@ async def change_theme(q: Q):
     q.user.dark_mode = not q.user.dark_mode
 
     # Toggle theme icon
-    q.page["header"].items[0].mini_button.icon = (
-        "ClearNight" if q.user.dark_mode else "Sunny"
-    )
+    q.page["header"].items[0].mini_button.icon = "ClearNight" if q.user.dark_mode else "Sunny"
 
     # Switch theme
     q.page["meta"].theme = "winter-is-coming" if q.user.dark_mode else "ember"
@@ -289,7 +275,9 @@ async def prompt_apply(q: Q):
     random_seed = random.randint(600000000000000, 700000000000000)
 
     random_seed = q.args.prompt_seed = check_input_value(q.args.prompt_seed, int, random_seed)
-    if q.client.prompt_model == 'prompt_sd':
+    no_images = q.args.no_images = check_input_value(q.args.no_images, int, 1)
+
+    if q.client.prompt_model == "prompt_sd":
         logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
         logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
         logger.info(f"Sampler choice: {q.args.df_sampling_dropdown}")
@@ -313,6 +301,7 @@ async def prompt_apply(q: Q):
                 sampler_type=q.args.df_sampling_dropdown,
                 output_path=OUTPUT_PATH,
                 seed=random_seed,
+                n_images=no_images,
             )
         q.client.negative_prompt_textbox = q.args.negative_prompt_textbox
         q.client.diffusion_n_steps = q.args.diffusion_n_steps
@@ -341,6 +330,7 @@ async def prompt_apply(q: Q):
 
     q.client.prompt_textbox = q.args.prompt_textbox
     q.client.prompt_seed = int(q.args.prompt_seed)
+    q.client.no_images = int(q.args.no_images)
     q.client.processedimg = res_path
     await update_processed_face(q)
 
@@ -381,9 +371,7 @@ async def capture(q: Q):
             q.page["meta"].redirect = "/"
             await q.page.save()
         else:
-            q.page["meta"].script = ui.inline_script(
-                content=js_schema, requires=[], targets=["video"]
-            )
+            q.page["meta"].script = ui.inline_script(content=js_schema, requires=[], targets=["video"])
             q.page["plot"] = ui.markup_card(
                 box=ui.box("middle_left", order=2, height="950px", width="950px"),
                 title="",
@@ -391,9 +379,7 @@ async def capture(q: Q):
             )
             # TODO Replace css styling
             q.page["meta"].stylesheets = [
-                ui.stylesheet(
-                    path="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
-                )
+                ui.stylesheet(path="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css")
             ]
 
     await q.page.save()
@@ -512,9 +498,7 @@ async def apply(q: Q):
         q.client.source_style = q.args.source_style or "style_none"
         q.client.age_slider = q.args.age_slider if q.args.age_slider else 0
         q.client.eye_distance = q.args.eye_distance if q.args.eye_distance else 0
-        q.client.eyebrow_distance = (
-            q.args.eyebrow_distance if q.args.eyebrow_distance else 0
-        )
+        q.client.eyebrow_distance = q.args.eyebrow_distance if q.args.eyebrow_distance else 0
         q.client.eye_ratio = q.args.eye_ratio if q.args.eye_ratio else 0
         q.client.eyes_open = q.args.eyes_open if q.args.eyes_open else 0
         q.client.gender = q.args.gender if q.args.gender else 0
@@ -522,9 +506,7 @@ async def apply(q: Q):
         q.client.lip_ratio = q.args.lip_ratio if q.args.lip_ratio else 0
         q.client.mouth_open = q.args.mouth_open if q.args.mouth_open else 0
         q.client.mouth_ratio = q.args.mouth_ratio if q.args.mouth_ratio else 0
-        q.client.nose_mouth_distance = (
-            q.args.nose_mouth_distance if q.args.nose_mouth_distance else 0
-        )
+        q.client.nose_mouth_distance = q.args.nose_mouth_distance if q.args.nose_mouth_distance else 0
         q.client.nose_ratio = q.args.nose_ratio if q.args.nose_ratio else 0
         q.client.nose_tip = q.args.nose_tip if q.args.nose_tip else 0
         q.client.pitch = q.args.pitch if q.args.pitch else 0
@@ -570,9 +552,7 @@ async def apply(q: Q):
             if not source_img_proj_path.is_file():
                 generate_projection(source_face, PRE_COMPUTED_PROJECTION_PATH)
                 logger.info(f"New projections computed.")
-                source_img_proj = (
-                    f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
-                )
+                source_img_proj = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
                 source_img_proj_path = Path(source_img_proj)
 
             mlc = edit_image(latent_info, source_img_proj_path, f_i)
@@ -590,17 +570,13 @@ async def apply(q: Q):
         # Check if precomputed latent space for source img exists
         if source_img_proj_path.is_file() & style_img_proj_path.is_file():
             swap_idxs = (z_low, z_high)
-            new_projection = apply_projection(
-                source_img_proj, style_img_proj, swap_idxs
-            )
+            new_projection = apply_projection(source_img_proj, style_img_proj, swap_idxs)
             new_img = synthesize_new_img(new_projection)
         else:
             if not source_img_proj_path.is_file():
                 generate_projection(source_face, PRE_COMPUTED_PROJECTION_PATH)
                 logger.info(f"New projections computed.")
-                source_img_proj = (
-                    f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
-                )
+                source_img_proj = f"{PRE_COMPUTED_PROJECTION_PATH}/{source_img_name}.npz"
                 source_img_proj_path = Path(source_img_proj)
             if not style_img_proj_path.is_file():
                 generate_projection(style_face, PRE_COMPUTED_PROJECTION_PATH)
@@ -610,16 +586,12 @@ async def apply(q: Q):
 
             if source_img_proj_path.is_file() & style_img_proj_path.is_file():
                 swap_idxs = (z_low, z_high)
-                new_projection = apply_projection(
-                    source_img_proj, style_img_proj, swap_idxs
-                )
+                new_projection = apply_projection(source_img_proj, style_img_proj, swap_idxs)
                 new_img = synthesize_new_img(new_projection)
 
     # Save new generated img locally
     if not file_name:
-        file_name = (
-            f"{OUTPUT_PATH}/{source_img_name}_{style_img_name}_{z_low}-{z_high}.jpg"
-        )
+        file_name = f"{OUTPUT_PATH}/{source_img_name}_{style_img_name}_{z_low}-{z_high}.jpg"
         logger.debug(f"Generate img: {file_name}")
         if new_img:
             new_img.save(file_name)
