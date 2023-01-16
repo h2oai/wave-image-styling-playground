@@ -331,6 +331,7 @@ async def prompt_apply(q: Q):
         q.client.prompt_top_p = q.args.prompt_top_p
         q.client.prompt_temp = q.args.prompt_temp
         q.client.prompt_cond_scale = q.args.prompt_cond_scale
+        seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox
     q.client.prompt_seed = int(q.args.prompt_seed)
