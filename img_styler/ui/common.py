@@ -6,6 +6,8 @@ from h2o_wave import Q, ui
 
 from ..utils.dataops import img2buf
 from .components import (
+    display_grid_view,
+    clear_grid_view,
     get_controls,
     get_footer,
     get_generate_gif_progress_card,
@@ -25,67 +27,60 @@ async def update_faces(q: Q, save=False):
         q.client.source_face = random.choice(q.app.source_faces)
 
     if q.client.task_choice == "B":
-        q.page["source_face"] = get_source_face_card(
-            img2buf(q.client.source_face), type="jpg"
-        )
-    else:
-        txt_val = q.client.prompt_textbox if q.client.prompt_textbox else ""
+        q.page["source_face"] = get_source_face_card(img2buf(q.client.source_face), type="jpg")
+    if q.client.task_choice != "D":  # For A, C
         q.page["source_face"] = get_source_face_card(
             img2buf(q.client.source_face), type="jpg", height="520px", width="500px"
         )
-        if q.client.task_choice == "D":
-            q.page["prompt_form"] = ui.form_card(
-                ui.box("main", order=1, height="200px", width="900px"),
-                items=[
-                    ui.copyable_text(
-                        name="prompt_textbox",
-                        label="Prompt (Express your creativity)",
-                        multiline=True,
-                        value=txt_val,
-                    ),
-                    ui.button(name="prompt_apply", label="Apply"),
-                ],
-            )
+    if q.client.task_choice == "D":
+        txt_val = q.client.prompt_textbox if q.client.prompt_textbox else ""
+        del q.page["source_face"]
+        q.page["prompt_form"] = ui.form_card(
+            ui.box("main", order=1, height="200px", width="900px"),
+            items=[
+                ui.copyable_text(
+                    name="prompt_textbox",
+                    label="Prompt (Express your creativity)",
+                    multiline=True,
+                    value=txt_val,
+                ),
+                ui.button(name="prompt_apply", label="Draw"),
+            ],
+        )
 
     del q.page["style_face"]
     if q.client.task_choice == "B":
-        q.page["style_face"] = get_style_face_card(
-            img2buf(q.client.style_face), type="jpg"
-        )
+        q.page["style_face"] = get_style_face_card(img2buf(q.client.style_face), type="jpg")
     if save:
         await q.page.save()
 
 
 async def update_processed_face(q: Q, save=False):
-    img_buf = img2buf(q.client.processedimg) if q.client.processedimg else None
     # Delete pages not needed.
     # It's cheap to create them.
     del q.page["processed_face"]
     del q.page["prompt_form"]
+    clear_grid_view(q)
 
     if q.client.task_choice == "B":
+        img_buf = img2buf(q.client.processedimg) if q.client.processedimg else None
         q.page["processed_face"] = get_processed_face_card(img_buf, type="jpg")
     else:
-        q.page["processed_face"] = get_processed_face_card(
-            img_buf,
-            title="Generated Image",
-            type="jpg",
-            layout_pos="middle_right",
-            order=2,
-        )
+        if q.client.task_choice != "D":
+            img_buf = img2buf(q.client.processedimg) if q.client.processedimg else None
+            q.page["processed_face"] = get_processed_face_card(
+                img_buf,
+                title="Generated Image",
+                type="jpg",
+                layout_pos="middle_right",
+                order=2,
+            )
         if q.client.task_choice == "D":
-            if q.client.prompt_model == 'prompt_sd':
+            if q.client.prompt_model == "prompt_sd":
                 items = [
                     ui.inline(
                         items=[
-                            ui.checkbox(
-                                name="prompt_use_source_img",
-                                label="Use source image",
-                                value=q.client.prompt_use_source_img,
-                                tooltip="Image-to-Image text-guided diffusion is applied by default.\
-                                        If un-checked, default Text-to-Image diffusion is used.",
-                            ),
-                            ui.button(name="prompt_apply", label="Apply"),
+                            ui.button(name="prompt_apply", label="Draw"),
                         ]
                     )
                 ]
@@ -102,6 +97,11 @@ async def update_processed_face(q: Q, save=False):
                         label="Settings",
                         items=[
                             ui.textbox(
+                                name="no_images",
+                                label="Number of images",
+                                value=str(q.client.no_images) if q.client.no_images else str(1),
+                            ),
+                            ui.textbox(
                                 name="prompt_seed",
                                 label="Seed",
                                 value=str(q.client.prompt_seed),
@@ -111,9 +111,7 @@ async def update_processed_face(q: Q, save=False):
                                 label="Samplers",
                                 value="K-LMS",
                                 choices=[
-                                    ui.choice(
-                                        name="K-LMS", label="K-LMS(Katherine Crowson)"
-                                    ),
+                                    ui.choice(name="K-LMS", label="K-LMS(Katherine Crowson)"),
                                     ui.choice(name="DDIM", label="DDIM"),
                                 ],
                             ),
@@ -129,18 +127,16 @@ async def update_processed_face(q: Q, save=False):
                                 name="prompt_guidance_scale",
                                 label="Guidance scale",
                                 min=3,
-                                max=20,
+                                max=50,
                                 step=0.5,
                                 value=q.client.prompt_guidance_scale,
                                 tooltip="No of steps for image synthesis.",
                             ),
                         ],
-                    )
+                    ),
                 ]
             else:
-                items = [
-                    ui.button(name="prompt_apply", label="Apply")
-                ]
+                items = [ui.button(name="prompt_apply", label="Draw")]
                 extra_settings = [
                     ui.expander(
                         name="expander",
@@ -179,15 +175,19 @@ async def update_processed_face(q: Q, save=False):
                 ]
             q.page["prompt_form"] = ui.form_card(
                 ui.box("main", order=1, height="320px", width="980px"),
-                items=items + [
+                items=items
+                + [
                     ui.textbox(
                         name="prompt_textbox",
                         label="Prompt",
                         multiline=True,
                         value=q.client.prompt_textbox,
                     )
-                ] + extra_settings
+                ]
+                + extra_settings,
             )
+            # Build Image grid based on the number of images generated
+            display_grid_view(q, q.client.processedimg)
     if save:
         await q.page.save()
 
@@ -225,9 +225,7 @@ async def progress_generate_gif(q: Q):
 async def make_base_ui(q: Q, save=False):
     q.app.logo_path = None
     if not q.app.logo_path:
-        q.app.logo_path = (
-            await q.run(q.site.upload, ["./img_styler/ui/assets/h2o_logo.svg"])
-        )[0]
+        q.app.logo_path = (await q.run(q.site.upload, ["./img_styler/ui/assets/h2o_logo.svg"]))[0]
     q.page["meta"] = get_meta(q)
     q.page["header"] = get_header(q)
     q.page["user_title"] = get_user_title(q)

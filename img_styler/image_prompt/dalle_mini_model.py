@@ -32,15 +32,12 @@ class DalleMini:
         )
         logger.debug("DALL-E mini model initialized.")
 
-
         self.vqgan, self.vqgan_params = VQModel.from_pretrained(
             vqgan_path, revision="e93a26e7707683d349bf5d5c41c5b0ef69b677a9", _do_init=False
         )
         logger.debug("VQGAN model initialized.")
 
-    def p_generate(
-        self, tokenized_prompt, key, top_k, top_p, temperature, condition_scale
-    ):
+    def p_generate(self, tokenized_prompt, key, top_k, top_p, temperature, condition_scale):
         return self.model.generate(
             **tokenized_prompt,
             prng_key=key,
@@ -54,14 +51,16 @@ class DalleMini:
     def p_decode(self, indices):
         return self.vqgan.decode_code(indices, params=self.vqgan_params)
 
-    def generate_image(self,
-                       prompt: str,
-                       output_path: str,
-                       seed: int,
-                       top_k=None,
-                       top_p=None,
-                       temperature=None,
-                       condition_scale: float = 10.0):
+    def generate_image(
+        self,
+        prompt: str,
+        output_path: str,
+        seed: int,
+        top_k=None,
+        top_p=None,
+        temperature=None,
+        condition_scale: float = 10.0,
+    ):
 
         prompts = [prompt]
         logger.debug(f"Prompts: {prompts}\n")
@@ -70,12 +69,7 @@ class DalleMini:
         # generate images
         logger.debug("Generating encoded image...")
         encoded_images = self.p_generate(
-            tokenized_prompt,
-            jax.random.PRNGKey(seed),
-            top_k,
-            top_p,
-            temperature,
-            condition_scale
+            tokenized_prompt, jax.random.PRNGKey(seed), top_k, top_p, temperature, condition_scale
         )
 
         # remove BOS
@@ -86,11 +80,10 @@ class DalleMini:
         decoded_images = decoded_images.clip(0.0, 1.0).reshape((-1, 256, 256, 3))
         img = Image.fromarray(np.asarray(decoded_images[0] * 255, dtype=np.uint8))
 
-        filename = os.path.join(output_path, 'result.jpg')
+        filename = os.path.join(output_path, "result.jpg")
         img.save(filename)
         logger.debug(f"Done. Saved image to {filename}")
         gc.collect()
-
         return filename
 
 

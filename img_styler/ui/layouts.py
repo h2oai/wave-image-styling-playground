@@ -4,68 +4,68 @@ from h2o_wave import ui
 def get_layouts():
     layouts = [
         ui.layout(
-            breakpoint='xs',
+            breakpoint="xs",
             zones=[
                 ui.zone(
-                    'header',
+                    "header",
                     direction=ui.ZoneDirection.ROW,
                 ),
                 ui.zone(
-                    'title',
+                    "title",
                     direction=ui.ZoneDirection.ROW,
                 ),
                 ui.zone(
-                    'main_wrapper',
+                    "main_wrapper",
                     direction=ui.ZoneDirection.ROW,
-                    align='start',
+                    align="start",
                     zones=[
                         ui.zone(
-                            'side_controls',
+                            "side_controls",
                             direction=ui.ZoneDirection.COLUMN,
-                            size='20%',
+                            size="20%",
                         ),
                         ui.zone(
-                            'content',
-                            size='80%',
+                            "content",
+                            size="80%",
                             direction=ui.ZoneDirection.COLUMN,
-                            justify='center',
+                            justify="center",
                             zones=[
-                                # ui.zone(
-                                #     'top',
-                                #     direction=ui.ZoneDirection.ROW,
-                                #     justify='center',
-                                #     align='center',
-                                # ),
                                 ui.zone(
-                                    'middle',
+                                    "middle",
                                     direction=ui.ZoneDirection.ROW,
-                                    justify='between',
+                                    justify="between",
                                     zones=[
                                         ui.zone(
-                                            'middle_left',
+                                            "middle_left",
                                             direction=ui.ZoneDirection.COLUMN,
-                                            justify='center',
-                                            align='center',
+                                            justify="center",
+                                            align="center",
                                         ),
                                         ui.zone(
-                                            'middle_right',
+                                            "middle_right",
                                             direction=ui.ZoneDirection.COLUMN,
-                                            justify='center',
-                                            align='center',
+                                            justify="center",
+                                            align="center",
                                         ),
                                     ],
                                 ),
                                 ui.zone(
-                                    'main',
+                                    "main",
                                     direction=ui.ZoneDirection.ROW,
-                                    justify='center',
-                                    align='center',
+                                    justify="center",
+                                    align="center",
+                                ),
+                                ui.zone(
+                                    "bottom",
+                                    direction=ui.ZoneDirection.ROW,
+                                    justify="center",
+                                    align="center",
                                 ),
                             ],
                         ),
                     ],
                 ),
-                ui.zone('footer', direction=ui.ZoneDirection.ROW),
+                ui.zone("footer", direction=ui.ZoneDirection.ROW),
             ],
         )
     ]
