@@ -511,17 +511,27 @@ def get_style_face_card(image, type):
     )
 
 
+def clear_grid_view(q):
+    if q.client.n_cards:
+        for _index in range(int(q.client.n_cards)):
+            del q.page[f"img_card_{_index}"]
+
+
 def display_grid_view(q: Q, image_paths: Optional[list] = None, type="jpg"):
     n_rows = len(image_paths) if image_paths else 1
-    _height = int(600 / n_rows)
-    _width = int(600 / n_rows)
+    if n_rows == 1:
+        _height = 600
+        _width = 600
+    else:
+        _height = 400
+        _width = 400
     q.client.n_cards = n_rows
     if image_paths:
         for _index in range(n_rows):
             _img = img2buf(image_paths[_index])
             q.page[f"img_card_{_index}"] = ui.image_card(
                 box=ui.box("bottom", order=1, height=f"{_height}px", width=f"{_width}px"),
-                title="",
+                title=f"Seed: {q.client.prompt_seeds[_index]}",
                 type=type,
                 image=_img,
             )

@@ -7,6 +7,7 @@ from h2o_wave import Q, ui
 from ..utils.dataops import img2buf
 from .components import (
     display_grid_view,
+    clear_grid_view,
     get_controls,
     get_footer,
     get_generate_gif_progress_card,
@@ -43,7 +44,7 @@ async def update_faces(q: Q, save=False):
                     multiline=True,
                     value=txt_val,
                 ),
-                ui.button(name="prompt_apply", label="Apply"),
+                ui.button(name="prompt_apply", label="Draw"),
             ],
         )
 
@@ -59,7 +60,7 @@ async def update_processed_face(q: Q, save=False):
     # It's cheap to create them.
     del q.page["processed_face"]
     del q.page["prompt_form"]
-    del q.page["img_grid"]
+    clear_grid_view(q)
 
     if q.client.task_choice == "B":
         img_buf = img2buf(q.client.processedimg) if q.client.processedimg else None
@@ -126,7 +127,7 @@ async def update_processed_face(q: Q, save=False):
                                 name="prompt_guidance_scale",
                                 label="Guidance scale",
                                 min=3,
-                                max=20,
+                                max=50,
                                 step=0.5,
                                 value=q.client.prompt_guidance_scale,
                                 tooltip="No of steps for image synthesis.",
@@ -135,7 +136,7 @@ async def update_processed_face(q: Q, save=False):
                     ),
                 ]
             else:
-                items = [ui.button(name="prompt_apply", label="Apply")]
+                items = [ui.button(name="prompt_apply", label="Draw")]
                 extra_settings = [
                     ui.expander(
                         name="expander",

@@ -22,7 +22,7 @@ def generate_image_with_prompt(
     guidance_scale: int = 7.5,
     sampler_type: str = "K-LMS",
     output_path: str = None,
-    seed: int = 42,
+    seed: int = None,
     n_images: int = 1,
 ):
     # License: https://huggingface.co/spaces/CompVis/stable-diffusion-license
@@ -72,7 +72,9 @@ def generate_image_with_prompt(
     seeds = []
     images = []
     for _ in range(n_images):
-        seed = generator.seed()
+        if not seed:
+            # If seed is not supplied
+            seed = generator.seed()
         seeds.append(seed)
         generator = generator.manual_seed(seed)
         image_latents = torch.randn(
@@ -106,6 +108,7 @@ def generate_image_with_prompt(
                 latents=image_latents,
             )["sample"][0]
         images.append(gen_image)
+        seed = None
 
     file_name = []
     for _idx in range(n_images):
@@ -116,4 +119,4 @@ def generate_image_with_prompt(
     # Release resources
     gc.collect()
     torch.cuda.empty_cache()
-    return file_name
+    return file_name, seeds

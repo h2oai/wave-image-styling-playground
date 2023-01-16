@@ -263,8 +263,11 @@ async def image_upload(q: Q):
 
 def check_input_value(value: str, val_type, default=None):
     try:
-        return val_type(value)
-    except ValueError:
+        if value:
+            return val_type(value)
+        else:
+            return default
+    except ValueError or TypeError:
         return default
 
 
@@ -276,13 +279,14 @@ async def prompt_apply(q: Q):
 
     random_seed = q.args.prompt_seed = check_input_value(q.args.prompt_seed, int, random_seed)
     no_images = q.args.no_images = check_input_value(q.args.no_images, int, 1)
-
+    q.args.no_images
     if q.client.prompt_model == "prompt_sd":
         logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
         logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
         logger.info(f"Sampler choice: {q.args.df_sampling_dropdown}")
+
         if q.args.prompt_use_source_img:
-            res_path = generate_image_with_prompt(
+            res_path, _ = generate_image_with_prompt(
                 input_img_path=q.client.source_face,
                 prompt_txt=q.args.prompt_textbox,
                 negative_prompt=q.args.negative_prompt_textbox,
@@ -293,7 +297,7 @@ async def prompt_apply(q: Q):
                 seed=random_seed,
             )
         else:  # Don't initialize with source image
-            res_path = generate_image_with_prompt(
+            res_path, seeds = generate_image_with_prompt(
                 prompt_txt=q.args.prompt_textbox,
                 negative_prompt=q.args.negative_prompt_textbox,
                 n_steps=q.args.diffusion_n_steps,
@@ -330,7 +334,9 @@ async def prompt_apply(q: Q):
 
     q.client.prompt_textbox = q.args.prompt_textbox
     q.client.prompt_seed = int(q.args.prompt_seed)
-    q.client.no_images = int(q.args.no_images)
+    # prompt_seeds has reference to all generated seeds
+    q.client.prompt_seeds = seeds
+    q.client.no_images = int(no_images)
     q.client.processedimg = res_path
     await update_processed_face(q)
 
