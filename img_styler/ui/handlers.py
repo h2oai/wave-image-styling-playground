@@ -13,6 +13,8 @@ from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
+from img_styler.image_prompt.control_net.canny2image import get_image_samples
+
 from ..caller import apply_projection, generate_gif, generate_projection, generate_style_frames, synthesize_new_img
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
 from ..image_prompt.dalle_mini_model import DalleMini
@@ -279,7 +281,7 @@ async def prompt_apply(q: Q):
 
     random_seed = q.args.prompt_seed = check_input_value(q.args.prompt_seed, int, random_seed)
     no_images = q.args.no_images = check_input_value(q.args.no_images, int, 1)
-    q.args.no_images
+
     if q.client.prompt_model == "prompt_sd":
         logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
         logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
@@ -311,7 +313,8 @@ async def prompt_apply(q: Q):
         q.client.diffusion_n_steps = q.args.diffusion_n_steps
         q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
         q.client.prompt_use_source_img = q.args.prompt_use_source_img
-    else:
+
+    elif q.client.prompt_model == "prompt_dalle_mini":
         logger.info(f"Top-K: {q.args.prompt_top_k}")
         logger.info(f"Top-P: {q.args.prompt_top_p}")
         logger.info(f"Temperature: {q.args.prompt_temp}")
@@ -331,6 +334,20 @@ async def prompt_apply(q: Q):
         q.client.prompt_top_p = q.args.prompt_top_p
         q.client.prompt_temp = q.args.prompt_temp
         q.client.prompt_cond_scale = q.args.prompt_cond_scale
+        seeds = [random_seed]
+
+    elif q.client.prompt_model == "prompt_controlnet":
+        res_path = get_image_samples(
+            input_img_path=q.client.source_face,
+            prompt=q.args.prompt_textbox,
+            output_path=OUTPUT_PATH,
+            seed=random_seed,
+            num_samples=q.args.prompt_num_samples,
+            strength=q.args.prompt_strength,
+        )
+
+        q.client.prompt_num_samples = q.args.prompt_num_samples
+        q.client.prompt_strength = q.args.prompt_strength
         seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox

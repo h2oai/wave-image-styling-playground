@@ -76,14 +76,9 @@ async def update_processed_face(q: Q, save=False):
                 order=2,
             )
         if q.client.task_choice == "D":
+            image_paths, image_titles = [], []
             if q.client.prompt_model == "prompt_sd":
-                items = [
-                    ui.inline(
-                        items=[
-                            ui.button(name="prompt_apply", label="Draw"),
-                        ]
-                    )
-                ]
+                items = [ui.button(name="prompt_apply", label="Draw")]
                 extra_settings = [
                     ui.textbox(
                         name="negative_prompt_textbox",
@@ -135,7 +130,7 @@ async def update_processed_face(q: Q, save=False):
                         ],
                     ),
                 ]
-            else:
+            elif q.client.prompt_model == "prompt_dalle_mini":
                 items = [ui.button(name="prompt_apply", label="Draw")]
                 extra_settings = [
                     ui.expander(
@@ -173,6 +168,41 @@ async def update_processed_face(q: Q, save=False):
                         ],
                     )
                 ]
+            elif q.client.prompt_model == "prompt_controlnet":
+                items = [ui.button(name="prompt_apply", label="Draw")]
+                extra_settings = [
+                    ui.expander(
+                        name="expander",
+                        label="Settings",
+                        items=[
+                            ui.textbox(
+                                name="prompt_seed",
+                                label="Seed",
+                                value=str(q.client.prompt_seed),
+                            ),
+                            ui.slider(
+                                name="prompt_num_samples",
+                                label="Images",
+                                min=1,
+                                max=12,
+                                value=q.client.prompt_num_samples,
+                                tooltip="Number of image samples to generate.",
+                            ),
+                            ui.slider(
+                                name="prompt_strength",
+                                label="Control Strength",
+                                min=0.0,
+                                max=2.0,
+                                step=0.1,
+                                value=q.client.prompt_num_samples,
+                                tooltip="Number of image samples to generate.",
+                            ),
+                        ],
+                    )
+                ]
+                image_paths.append(q.client.source_face)
+                image_titles.append("Source image")
+
             q.page["prompt_form"] = ui.form_card(
                 ui.box("main", order=1, height="320px", width="980px"),
                 items=items
@@ -186,8 +216,11 @@ async def update_processed_face(q: Q, save=False):
                 ]
                 + extra_settings,
             )
+            if q.client.processedimg:
+                image_paths.append(q.client.processedimg)
+                image_titles.append(f"Seed: {q.client.prompt_seeds[0]}")
             # Build Image grid based on the number of images generated
-            display_grid_view(q, q.client.processedimg)
+            display_grid_view(q, image_paths, image_titles)
     if save:
         await q.page.save()
 

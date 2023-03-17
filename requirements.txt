@@ -12,6 +12,7 @@ colorama==0.4.5; sys_platform == "win32" and python_version >= "3.7" and python_
 cycler==0.11.0; python_version >= "3.7"
 dalle-mini
 deepface==0.0.73; python_full_version >= "3.5.5"
+einops==0.3.0
 facexlib>=0.2.5
 diffusers==0.8.1
 filelock==3.8.0; python_version >= "3.7" and python_full_version >= "3.5.5"
@@ -47,7 +48,9 @@ mtcnn==0.1.1; python_full_version >= "3.5.5"
 ninja==1.10.2.3
 numpy==1.21.6; python_version >= "3.7" and python_version < "3.11"
 oauthlib==3.2.0; python_version >= "3.7" and python_full_version >= "3.5.5"
+omegaconf==2.1.1
 opencv-python==4.6.0.66; python_version >= "3.6"
+open_clip_torch==2.0.2
 opt-einsum==3.3.0; python_version >= "3.7" and python_full_version >= "3.5.5"
 packaging==21.3; python_version >= "3.7" and python_full_version >= "3.5.5"
 pandas==1.3.5; python_full_version >= "3.7.1"
