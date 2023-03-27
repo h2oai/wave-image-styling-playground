@@ -96,7 +96,7 @@ def generate_image_with_prompt(
         #         num_inference_steps=n_steps,
         #         latents=image_latents, # image_latents should represent the latent shape for all images.
         #     )["sample"]
-
+        result = None
         with autocast(device):
             gen_image = pipe(
                 prompt=prompt_txt,
@@ -106,16 +106,19 @@ def generate_image_with_prompt(
                 guidance_scale=guidance_scale,
                 num_inference_steps=n_steps,
                 latents=image_latents,
-            )["sample"][0]
-        images.append(gen_image)
+            )
+            result = gen_image.get("images", None)
+        if result:
+            images.append(result[0])
         seed = None
 
     file_name = []
-    for _idx in range(n_images):
-        f_n = output_path + f"/result_{_idx}.jpg"
-        if output_path:
-            images[_idx].save(f_n)
-            file_name.append(f_n)
+    if len(images) > 0:  # if images are generated.
+        for _idx in range(n_images):
+            f_n = output_path + f"/result_{_idx}.jpg"
+            if output_path:
+                images[_idx].save(f_n)
+                file_name.append(f_n)
     # Release resources
     gc.collect()
     torch.cuda.empty_cache()

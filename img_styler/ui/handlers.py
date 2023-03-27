@@ -15,7 +15,7 @@ from PIL import Image
 
 from ..caller import apply_projection, generate_gif, generate_projection, generate_style_frames, synthesize_new_img
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
-from ..image_prompt.dalle_mini_model import DalleMini
+# from ..image_prompt.dalle_mini_model import DalleMini
 from ..image_prompt.stable_diffusion import generate_image_with_prompt
 from ..latent_editor import edit_image, load_latent_vectors
 from ..utils.dataops import buf2img, get_files_in_dir, img2buf, remove_file
@@ -312,26 +312,27 @@ async def prompt_apply(q: Q):
         q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
         q.client.prompt_use_source_img = q.args.prompt_use_source_img
     else:
-        logger.info(f"Top-K: {q.args.prompt_top_k}")
-        logger.info(f"Top-P: {q.args.prompt_top_p}")
-        logger.info(f"Temperature: {q.args.prompt_temp}")
-        logger.info(f"Condition Scale: {q.args.prompt_cond_scale}")
-        dalle_mini_obj = DalleMini()
-        res_path = dalle_mini_obj.generate_image(
-            prompt=q.args.prompt_textbox,
-            output_path=OUTPUT_PATH,
-            seed=random_seed,
-            top_k=check_input_value(q.args.prompt_top_k, int),
-            top_p=check_input_value(q.args.prompt_top_p, float),
-            temperature=check_input_value(q.args.prompt_temp, float),
-            condition_scale=q.args.prompt_cond_scale,
-        )
+        pass
+        # logger.info(f"Top-K: {q.args.prompt_top_k}")
+        # logger.info(f"Top-P: {q.args.prompt_top_p}")
+        # logger.info(f"Temperature: {q.args.prompt_temp}")
+        # logger.info(f"Condition Scale: {q.args.prompt_cond_scale}")
+        # dalle_mini_obj = DalleMini()
+        # res_path = dalle_mini_obj.generate_image(
+        #     prompt=q.args.prompt_textbox,
+        #     output_path=OUTPUT_PATH,
+        #     seed=random_seed,
+        #     top_k=check_input_value(q.args.prompt_top_k, int),
+        #     top_p=check_input_value(q.args.prompt_top_p, float),
+        #     temperature=check_input_value(q.args.prompt_temp, float),
+        #     condition_scale=q.args.prompt_cond_scale,
+        # )
 
-        q.client.prompt_top_k = q.args.prompt_top_k
-        q.client.prompt_top_p = q.args.prompt_top_p
-        q.client.prompt_temp = q.args.prompt_temp
-        q.client.prompt_cond_scale = q.args.prompt_cond_scale
-        seeds = [random_seed]
+        # q.client.prompt_top_k = q.args.prompt_top_k
+        # q.client.prompt_top_p = q.args.prompt_top_p
+        # q.client.prompt_temp = q.args.prompt_temp
+        # q.client.prompt_cond_scale = q.args.prompt_cond_scale
+        # seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox
     q.client.prompt_seed = int(q.args.prompt_seed)

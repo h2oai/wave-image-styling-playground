@@ -14,8 +14,8 @@ setup: download_models ## Install dependencies for dev
 	mkdir -p var/lib/tmp/jobs/output
 
 	python3 -m venv .venv
-	./.venv/bin/python -m pip install --upgrade pip
-	./.venv/bin/python -m pip install -r requirements_dev.txt
+	./.venv/bin/python3 -m pip install --upgrade pip
+	./.venv/bin/python3 -m pip install -r requirements_dev.txt
 
 download_models_haic:
 	mkdir -p models

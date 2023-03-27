@@ -429,7 +429,7 @@ def get_controls(q: Q):
                     label="Model",
                     choices=[
                         ui.choice(name="prompt_sd", label="Stable Diffusion"),
-                        ui.choice(name="prompt_dalle_mini", label="DALL-E mini"),
+                        # ui.choice(name="prompt_dalle_mini", label="DALL-E mini"),
                     ],
                     value=q.client.prompt_model,
                     trigger=True,
