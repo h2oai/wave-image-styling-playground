@@ -1,4 +1,5 @@
 absl-py==1.2.0; python_version >= "3.7" and python_full_version >= "3.5.5"
+accelerate==0.17.1
 aiofiles==0.8.0; python_version >= "3.6" and python_version < "4.0"
 asgiref==3.5.2; python_version >= "3.7" and python_full_version >= "3.7.1"
 astunparse==1.6.3; python_version >= "3.7" and python_full_version >= "3.5.5"

@@ -1,4 +1,8 @@
+# Used by H2O Cloud environment
+# Might differ slightly from requirements_dev.txt
+# Outside of H2O Cloud, requirements_dev.txt is the source of truth
 absl-py==1.2.0; python_version >= "3.7" and python_full_version >= "3.5.5"
+accelerate==0.17.1
 aiofiles==0.8.0; python_version >= "3.6" and python_version < "4.0"
 asgiref==3.5.2; python_version >= "3.7" and python_full_version >= "3.7.1"
 basicsr>=1.4.2
@@ -21,7 +25,6 @@ fonttools==4.37.1; python_version >= "3.7"
 ftfy==6.1.1
 gast==0.4.0; python_version >= "3.7" and python_full_version >= "3.5.5"
 gdown==4.5.1; python_full_version >= "3.5.5"
-git+https://github.com/patil-suraj/vqgan-jax.git
 google-auth-oauthlib==0.4.6; python_version >= "3.7" and python_full_version >= "3.5.5"
 google-auth==2.11.0; python_version >= "3.7" and python_full_version >= "3.6.0"
 google-pasta==0.2.0; python_version >= "3.7" and python_full_version >= "3.5.5"
