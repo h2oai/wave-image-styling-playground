@@ -427,58 +427,64 @@ def rotate_face(image_path: str):
 
 def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
     models = {}
-    models["emotion"] = DeepFace.build_model("Emotion")
-    # MTCNN (performed better than RetinaFace for the sample images tried).
-    # If face is not detected; it's probably b'cauz of orientation
-    # Naive approach:
-    # Try rotating the image by 90 degrees to find face
-    # Rotate -> ['Left', 'Right', 'Up', 'Down']
-    obj = None
-    for _ in range(4):
-        try:
-            obj = DeepFace.analyze(
-                img_path=img_path,
-                models=models,
-                actions=["emotion"],
-                detector_backend="mtcnn",
-            )
-            if obj and len(obj) > 0:
-                break
-        except ValueError as ve:
-            logger.info(f"Face re-orientation might be needed.")
-            new_img = rotate_face(img_path)
-            # q.client.current_img = new_img
-            pass
-    new_img = img2buf(img_path)
-    q.client.current_img = new_img
+    # TODO Make emotion detection optional
+    # For now disable it for prompt based styling
     new_image_encoded = None
-    logger.info(f"Facial Attributes: {obj}")
     img_format = "data:image/png;base64,"
-    if obj:
-        # if face is detected
-        dominant_emotion = obj["dominant_emotion"]
-        logger.info(f"Dominant emotion: {dominant_emotion}")
-        # Draw bounding box around the face
-        _img = q.client.current_img
-        # _img = _im.split(",")[1]
-        base64_decoded = base64.b64decode(_img)
-        image = Image.open(io.BytesIO(base64_decoded))
-        img_np = np.array(image)
-
-        x = obj["region"]["x"]
-        y = obj["region"]["y"]
-        w = obj["region"]["w"]
-        h = obj["region"]["h"]
-        img_w_box2 = draw_boundary(img_np, x, y, w, h, text=dominant_emotion)
-        pil_img = Image.fromarray(img_w_box2)
-
-        buff = BytesIO()
-        pil_img = pil_img.convert("RGB")
-        pil_img.save(buff, format="JPEG")
-        new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+    if q.client.prompt_model == "prompt_controlnet":
+        new_image_encoded = img2buf(img_path)
     else:
-        # else proceed without as a non-portrait image
-        new_image_encoded = new_img
+        models["emotion"] = DeepFace.build_model("Emotion")
+        # MTCNN (performed better than RetinaFace for the sample images tried).
+        # If face is not detected; it's probably b'cauz of orientation
+        # Naive approach:
+        # Try rotating the image by 90 degrees to find face
+        # Rotate -> ['Left', 'Right', 'Up', 'Down']
+        obj = None
+        for _ in range(4):
+            try:
+                obj = DeepFace.analyze(
+                    img_path=img_path,
+                    models=models,
+                    actions=["emotion"],
+                    detector_backend="mtcnn",
+                )
+                if obj and len(obj) > 0:
+                    break
+            except ValueError as ve:
+                logger.info(f"Face re-orientation might be needed.")
+                new_img = rotate_face(img_path)
+                # q.client.current_img = new_img
+                pass
+        new_img = img2buf(img_path)
+        q.client.current_img = new_img
+        logger.info(f"Facial Attributes: {obj}")
+
+        if obj:
+            # if face is detected
+            dominant_emotion = obj["dominant_emotion"]
+            logger.info(f"Dominant emotion: {dominant_emotion}")
+            # Draw bounding box around the face
+            _img = q.client.current_img
+            # _img = _im.split(",")[1]
+            base64_decoded = base64.b64decode(_img)
+            image = Image.open(io.BytesIO(base64_decoded))
+            img_np = np.array(image)
+
+            x = obj["region"]["x"]
+            y = obj["region"]["y"]
+            w = obj["region"]["w"]
+            h = obj["region"]["h"]
+            img_w_box2 = draw_boundary(img_np, x, y, w, h, text=dominant_emotion)
+            pil_img = Image.fromarray(img_w_box2)
+
+            buff = BytesIO()
+            pil_img = pil_img.convert("RGB")
+            pil_img.save(buff, format="JPEG")
+            new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+        else:
+            # else proceed without as a non-portrait image
+            new_image_encoded = new_img
     # Update image
     new_image = img_format + new_image_encoded
 

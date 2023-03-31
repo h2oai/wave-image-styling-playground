@@ -474,6 +474,12 @@ def get_controls(q: Q):
                         ],
                         tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
                     ),
+                    ui.buttons(
+                        [
+                            ui.button(name="upload_image_dialog", label="Upload", primary=True),
+                        ],
+                        justify="end",
+                    ),
                 ]
                 if q.client.prompt_model == "prompt_controlnet"
                 else []
