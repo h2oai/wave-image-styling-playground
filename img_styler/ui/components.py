@@ -470,7 +470,7 @@ def get_controls(q: Q):
                         value="checkbox_canny",
                         choices=[
                             ui.choice(name="checkbox_canny", label="Canny2Image"),
-                            ui.choice(name="checkbox_depth", label="Depth2Image", disabled=True),
+                            ui.choice(name="checkbox_scribble", label="Scribble2Image", disabled=True),
                         ],
                         tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
                     ),
