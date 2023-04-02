@@ -181,11 +181,11 @@ async def update_processed_face(q: Q, save=False):
                                 value=str(q.client.prompt_seed),
                             ),
                             ui.slider(
-                                name="prompt_num_samples",
+                                name="no_images",
                                 label="Images",
                                 min=1,
                                 max=12,
-                                value=q.client.prompt_num_samples,
+                                value=q.client.no_images,
                                 tooltip="Number of image samples to generate.",
                             ),
                             ui.slider(
@@ -194,8 +194,7 @@ async def update_processed_face(q: Q, save=False):
                                 min=0.0,
                                 max=2.0,
                                 step=0.1,
-                                value=q.client.prompt_num_samples,
-                                tooltip="Number of image samples to generate.",
+                                value=q.client.prompt_strength,
                             ),
                         ],
                     )

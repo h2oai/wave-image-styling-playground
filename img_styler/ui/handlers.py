@@ -337,16 +337,16 @@ async def prompt_apply(q: Q):
         seeds = [random_seed]
 
     elif q.client.prompt_model == "prompt_controlnet":
+        logger.info(f"Strength: {q.args.prompt_strength}")
         res_path = get_image_samples(
             input_img_path=q.client.source_face,
             prompt=q.args.prompt_textbox,
             output_path=OUTPUT_PATH,
             seed=random_seed,
-            num_samples=q.args.prompt_num_samples,
+            num_samples=no_images,
             strength=q.args.prompt_strength,
         )
 
-        q.client.prompt_num_samples = q.args.prompt_num_samples
         q.client.prompt_strength = q.args.prompt_strength
         seeds = [random_seed]
 
