@@ -1,3 +1,5 @@
+# Reference: https://github.com/lllyasviel/ControlNet
+
 import gc
 import os
 
