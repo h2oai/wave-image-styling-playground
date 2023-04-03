@@ -13,6 +13,8 @@ from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
+from img_styler.image_prompt.control_net.canny2image import get_image_samples
+
 from ..caller import apply_projection, generate_gif, generate_projection, generate_style_frames, synthesize_new_img
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
 from ..image_prompt.dalle_mini_model import DalleMini
@@ -279,7 +281,7 @@ async def prompt_apply(q: Q):
 
     random_seed = q.args.prompt_seed = check_input_value(q.args.prompt_seed, int, random_seed)
     no_images = q.args.no_images = check_input_value(q.args.no_images, int, 1)
-    q.args.no_images
+
     if q.client.prompt_model == "prompt_sd":
         logger.info(f"Number of steps: {q.args.diffusion_n_steps}")
         logger.info(f"Guidance scale: {q.args.prompt_guidance_scale}")
@@ -311,7 +313,8 @@ async def prompt_apply(q: Q):
         q.client.diffusion_n_steps = q.args.diffusion_n_steps
         q.client.prompt_guidance_scale = q.args.prompt_guidance_scale
         q.client.prompt_use_source_img = q.args.prompt_use_source_img
-    else:
+
+    elif q.client.prompt_model == "prompt_dalle_mini":
         logger.info(f"Top-K: {q.args.prompt_top_k}")
         logger.info(f"Top-P: {q.args.prompt_top_p}")
         logger.info(f"Temperature: {q.args.prompt_temp}")
@@ -331,6 +334,20 @@ async def prompt_apply(q: Q):
         q.client.prompt_top_p = q.args.prompt_top_p
         q.client.prompt_temp = q.args.prompt_temp
         q.client.prompt_cond_scale = q.args.prompt_cond_scale
+        seeds = [random_seed]
+
+    elif q.client.prompt_model == "prompt_controlnet":
+        logger.info(f"Strength: {q.args.prompt_strength}")
+        res_path = get_image_samples(
+            input_img_path=q.client.source_face,
+            prompt=q.args.prompt_textbox,
+            output_path=OUTPUT_PATH,
+            seed=random_seed,
+            num_samples=no_images,
+            strength=q.args.prompt_strength,
+        )
+
+        q.client.prompt_strength = q.args.prompt_strength
         seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox
@@ -410,58 +427,64 @@ def rotate_face(image_path: str):
 
 def facial_feature_analysis(q: Q, img_path: str, title="Clicked Image"):
     models = {}
-    models["emotion"] = DeepFace.build_model("Emotion")
-    # MTCNN (performed better than RetinaFace for the sample images tried).
-    # If face is not detected; it's probably b'cauz of orientation
-    # Naive approach:
-    # Try rotating the image by 90 degrees to find face
-    # Rotate -> ['Left', 'Right', 'Up', 'Down']
-    obj = None
-    for _ in range(4):
-        try:
-            obj = DeepFace.analyze(
-                img_path=img_path,
-                models=models,
-                actions=["emotion"],
-                detector_backend="mtcnn",
-            )
-            if obj and len(obj) > 0:
-                break
-        except ValueError as ve:
-            logger.info(f"Face re-orientation might be needed.")
-            new_img = rotate_face(img_path)
-            # q.client.current_img = new_img
-            pass
-    new_img = img2buf(img_path)
-    q.client.current_img = new_img
+    # TODO Make emotion detection optional
+    # For now disable it for prompt based styling
     new_image_encoded = None
-    logger.info(f"Facial Attributes: {obj}")
     img_format = "data:image/png;base64,"
-    if obj:
-        # if face is detected
-        dominant_emotion = obj["dominant_emotion"]
-        logger.info(f"Dominant emotion: {dominant_emotion}")
-        # Draw bounding box around the face
-        _img = q.client.current_img
-        # _img = _im.split(",")[1]
-        base64_decoded = base64.b64decode(_img)
-        image = Image.open(io.BytesIO(base64_decoded))
-        img_np = np.array(image)
-
-        x = obj["region"]["x"]
-        y = obj["region"]["y"]
-        w = obj["region"]["w"]
-        h = obj["region"]["h"]
-        img_w_box2 = draw_boundary(img_np, x, y, w, h, text=dominant_emotion)
-        pil_img = Image.fromarray(img_w_box2)
-
-        buff = BytesIO()
-        pil_img = pil_img.convert("RGB")
-        pil_img.save(buff, format="JPEG")
-        new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+    if q.client.prompt_model == "prompt_controlnet":
+        new_image_encoded = img2buf(img_path)
     else:
-        # else proceed without as a non-portrait image
-        new_image_encoded = new_img
+        models["emotion"] = DeepFace.build_model("Emotion")
+        # MTCNN (performed better than RetinaFace for the sample images tried).
+        # If face is not detected; it's probably b'cauz of orientation
+        # Naive approach:
+        # Try rotating the image by 90 degrees to find face
+        # Rotate -> ['Left', 'Right', 'Up', 'Down']
+        obj = None
+        for _ in range(4):
+            try:
+                obj = DeepFace.analyze(
+                    img_path=img_path,
+                    models=models,
+                    actions=["emotion"],
+                    detector_backend="mtcnn",
+                )
+                if obj and len(obj) > 0:
+                    break
+            except ValueError as ve:
+                logger.info(f"Face re-orientation might be needed.")
+                new_img = rotate_face(img_path)
+                # q.client.current_img = new_img
+                pass
+        new_img = img2buf(img_path)
+        q.client.current_img = new_img
+        logger.info(f"Facial Attributes: {obj}")
+
+        if obj:
+            # if face is detected
+            dominant_emotion = obj["dominant_emotion"]
+            logger.info(f"Dominant emotion: {dominant_emotion}")
+            # Draw bounding box around the face
+            _img = q.client.current_img
+            # _img = _im.split(",")[1]
+            base64_decoded = base64.b64decode(_img)
+            image = Image.open(io.BytesIO(base64_decoded))
+            img_np = np.array(image)
+
+            x = obj["region"]["x"]
+            y = obj["region"]["y"]
+            w = obj["region"]["w"]
+            h = obj["region"]["h"]
+            img_w_box2 = draw_boundary(img_np, x, y, w, h, text=dominant_emotion)
+            pil_img = Image.fromarray(img_w_box2)
+
+            buff = BytesIO()
+            pil_img = pil_img.convert("RGB")
+            pil_img.save(buff, format="JPEG")
+            new_image_encoded = base64.b64encode(buff.getvalue()).decode("utf-8")
+        else:
+            # else proceed without as a non-portrait image
+            new_image_encoded = new_img
     # Update image
     new_image = img_format + new_image_encoded
 

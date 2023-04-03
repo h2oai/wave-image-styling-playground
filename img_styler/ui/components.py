@@ -430,6 +430,7 @@ def get_controls(q: Q):
                     choices=[
                         ui.choice(name="prompt_sd", label="Stable Diffusion"),
                         ui.choice(name="prompt_dalle_mini", label="DALL-E mini"),
+                        ui.choice(name="prompt_controlnet", label="ControlNet"),
                     ],
                     value=q.client.prompt_model,
                     trigger=True,
@@ -454,6 +455,33 @@ def get_controls(q: Q):
                     ),
                 ]
                 if q.client.prompt_model == "prompt_sd"
+                else [
+                    ui.dropdown(
+                        name="source_face",
+                        label="Source Image",
+                        choices=[ui.choice(name=x, label=os.path.basename(x)) for x in q.app.source_faces],
+                        value=q.client.source_face,
+                        trigger=True,
+                        tooltip="Select a source image for editing. One can upload a new source image as well.",
+                    ),
+                    ui.choice_group(
+                        name="choice_group_prompt",
+                        label="Options",
+                        value="checkbox_canny",
+                        choices=[
+                            ui.choice(name="checkbox_canny", label="Canny2Image"),
+                            ui.choice(name="checkbox_scribble", label="Scribble2Image", disabled=True),
+                        ],
+                        tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
+                    ),
+                    ui.buttons(
+                        [
+                            ui.button(name="upload_image_dialog", label="Upload", primary=True),
+                        ],
+                        justify="end",
+                    ),
+                ]
+                if q.client.prompt_model == "prompt_controlnet"
                 else []
             ),
         )
@@ -517,7 +545,7 @@ def clear_grid_view(q):
             del q.page[f"img_card_{_index}"]
 
 
-def display_grid_view(q: Q, image_paths: Optional[list] = None, type="jpg"):
+def display_grid_view(q: Q, image_paths: Optional[list] = None, titles: Optional[list] = None, type="jpg"):
     n_rows = len(image_paths) if image_paths else 1
     if n_rows == 1:
         _height = 600
@@ -531,7 +559,7 @@ def display_grid_view(q: Q, image_paths: Optional[list] = None, type="jpg"):
             _img = img2buf(image_paths[_index])
             q.page[f"img_card_{_index}"] = ui.image_card(
                 box=ui.box("bottom", order=1, height=f"{_height}px", width=f"{_width}px"),
-                title=f"Seed: {q.client.prompt_seeds[_index]}",
+                title=titles[_index],
                 type=type,
                 image=_img,
             )
