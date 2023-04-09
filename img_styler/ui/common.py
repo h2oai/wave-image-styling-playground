@@ -196,6 +196,16 @@ async def update_processed_face(q: Q, save=False):
                                 step=0.1,
                                 value=q.client.prompt_strength,
                             ),
+                            ui.textbox(
+                                name="prompt_a",
+                                label="Added Prompt",
+                                value=q.client.prompt_a or "best quality, extremely detailed",
+                            ),
+                            ui.textbox(
+                                name="prompt_n",
+                                label="Negative Prompt",
+                                value=q.client.prompt_n or "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+                            ),
                         ],
                     )
                 ]

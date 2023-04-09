@@ -337,16 +337,22 @@ async def prompt_apply(q: Q):
         seeds = [random_seed]
     elif q.client.prompt_model == "prompt_controlnet":
         logger.info(f"Strength: {q.args.prompt_strength}")
+        logger.info(f"Added Prompt: {q.args.prompt_a}")
+        logger.info(f"Negative Prompt: {q.args.prompt_n}")
         res_path = get_image_samples(
             input_img_path=q.client.source_face,
             prompt=q.args.prompt_textbox,
             output_path=OUTPUT_PATH,
             seed=random_seed,
             num_samples=no_images,
+            a_prompt=q.args.prompt_a,
+            n_prompt=q.args.prompt_n,
             strength=check_input_value(q.args.prompt_strength, float, 1),
         )
 
         q.client.prompt_strength = q.args.prompt_strength
+        q.client.prompt_a = q.args.prompt_a
+        q.client.prompt_n = q.args.prompt_n
         seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox
