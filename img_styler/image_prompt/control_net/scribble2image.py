@@ -1,3 +1,5 @@
+# https://github.com/lllyasviel/ControlNet/blob/main/gradio_scribble2image.py
+
 import gc
 import os
 

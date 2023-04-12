@@ -1,4 +1,4 @@
-# Reference: https://github.com/lllyasviel/ControlNet
+# Reference: https://github.com/lllyasviel/ControlNet/blob/main/gradio_canny2image.py
 
 import gc
 import os
