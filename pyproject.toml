@@ -23,11 +23,12 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "3.7.10"
+python = ">=3.8.16,<3.10"
 h2o-wave = "^0.22.0"
-torch = "^1.10.2"
+torch = "^2.0.0"
+pytorch-lightning ="^1.5.0"
 diffusers = "0.4.1"
-torchvision = "^0.11.3"
+torchvision = "^0.15.1"
 numpy = "^1.21.6"
 Pillow = "^9.0.1"
 aiofiles = "^0.8.0"
@@ -39,24 +40,33 @@ matplotlib = "^3.5.1"
 scipy = "^1.4.1"
 cmake = "^3.22.2"
 dlib = "^19.23.0"
+dalle-mini = "^0.1.2"
+einops = "^0.6.1"
+basicsr = "^1.4.2"
+facexlib = "^0.3.0"
 requests = "^2.27.1"
 deepface = "^0.0.73"
 ftfy = "^6.1.1"
 transformers = "^4.23.1"
+tensorflow = "^2.12.0"
 ninja = "^1.10.2"
+omegaconf = "^2.3.0"
+jax = "^0.4.8"
+jaxlib = "^0.4.7"
+realesrgan = "^0.3.0"
+toml = "^0.10.2"
+open_clip_torch = "^2.0.2"
+xformers="^0.0.18"
 
 [tool.poetry.dev-dependencies]
 pylint = { version = "^2.12.2", allow-prereleases = true }
 flake8 = { version = "^4.0.1", allow-prereleases = true }
 black = { version = "21.12b0", allow-prereleases = true }
-jupyterlab = { version = "^3.2.9", allow-prereleases = true }
-jupyterlab-vim = { version = "^0.14.5", allow-prereleases = true }
-jupyterlab-code-formatter = { version = "^1.4.10", allow-prereleases = true }
 
 [tool.black]
 line-length = 120
 skip-string-normalization = true
-target-version = ['py37.1']
+target-version = ['py38.16']
 include = '\.pyi?$'
 exclude = '''
 (

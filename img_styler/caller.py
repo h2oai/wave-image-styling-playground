@@ -20,7 +20,8 @@ from .face_aligner import align_face
 from .sg2_model import Generator
 
 sys.path.append(f"{os.getcwd()}/img_styler")
-device = torch.device('cuda')
+torch.cuda.empty_cache()
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 logger.info('Load pre-trained model...')
 with open(f'./models/ffhq.pkl', 'rb') as f:
