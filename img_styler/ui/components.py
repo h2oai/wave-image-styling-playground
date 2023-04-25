@@ -465,14 +465,15 @@ def get_controls(q: Q):
                         tooltip="Select a source image for editing. One can upload a new source image as well.",
                     ),
                     ui.choice_group(
-                        name="choice_group_prompt",
+                        name="choice_group_controlnet",
                         label="Options",
-                        value="checkbox_canny",
+                        value=q.client.choice_group_controlnet or "checkbox_canny",
                         choices=[
                             ui.choice(name="checkbox_canny", label="Canny2Image"),
                             ui.choice(name="checkbox_scribble", label="Scribble2Image"),
                         ],
-                        tooltip="Stable Diffusion is a text-to-image latent diffusion model created by the researchers and engineers from CompVis, Stability AI and LAION.",
+                        trigger=True,
+                        tooltip="Stable Diffusion is a text-to-image latent diffusion model, created by the researchers and engineers from CompVis, Stability AI and LAION.",
                     ),
                     ui.buttons(
                         [

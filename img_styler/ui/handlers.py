@@ -13,7 +13,8 @@ from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
-from img_styler.image_prompt.control_net.canny2image import get_image_samples
+from img_styler.image_prompt.control_net.canny2image import get_canny_image_samples
+from img_styler.image_prompt.control_net.scribble2image import get_scribble_image_samples
 
 from ..caller import apply_projection, generate_gif, generate_projection, generate_style_frames, synthesize_new_img
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
@@ -86,6 +87,8 @@ async def process(q: Q):
         restore_image(q.client.restorer, img_path, out_path)
     if q.args.prompt_model:
         q.client.prompt_model = q.args.prompt_model
+    if q.args.choice_group_controlnet:
+        q.client.choice_group_controlnet = q.args.choice_group_controlnet
     if q.args.save_img_to_list:
         new_img_path = os.path.join(INPUT_PATH, q.args.img_name)
         if os.path.exists(new_img_path):
@@ -339,17 +342,28 @@ async def prompt_apply(q: Q):
         logger.info(f"Strength: {q.args.prompt_strength}")
         logger.info(f"Added Prompt: {q.args.prompt_a}")
         logger.info(f"Negative Prompt: {q.args.prompt_n}")
-        res_path = get_image_samples(
+
+        controlnet_type = q.client.choice_group_controlnet
+        if controlnet_type == "checkbox_canny": controlnet_func = get_canny_image_samples
+        else: controlnet_func = get_scribble_image_samples
+
+        res_path = controlnet_func(
             input_img_path=q.client.source_face,
             prompt=q.args.prompt_textbox,
             output_path=OUTPUT_PATH,
             seed=random_seed,
             num_samples=no_images,
+            image_resolution=check_input_value(q.args.prompt_resolution, int, 512),
+            scale=check_input_value(q.args.prompt_scale, float, 9.0),
+            save_memory=q.args.prompt_save_memory,
+            strength=check_input_value(q.args.prompt_strength, float, 1),
             a_prompt=q.args.prompt_a,
             n_prompt=q.args.prompt_n,
-            strength=check_input_value(q.args.prompt_strength, float, 1),
         )
 
+        q.client.prompt_resolution = q.args.prompt_resolution
+        q.client.prompt_scale = q.args.prompt_scale
+        q.client.prompt_save_memory = q.args.prompt_save_memory
         q.client.prompt_strength = q.args.prompt_strength
         q.client.prompt_a = q.args.prompt_a
         q.client.prompt_n = q.args.prompt_n

@@ -16,7 +16,7 @@ from img_styler.image_prompt.control_net.cldm.model import create_model, load_st
 from img_styler.image_prompt.control_net.cldm.ddim_hacked import DDIMSampler
 
 
-def get_image_samples(
+def get_canny_image_samples(
     input_img_path,
     prompt,
     seed,
@@ -40,7 +40,7 @@ def get_image_samples(
     dirname = os.path.dirname(__file__)
     model = create_model(os.path.join(dirname, "models/cldm_v15.yaml")).cpu()
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.load_state_dict(load_state_dict("models/control_sd15_canny.pth", location=device))
+    model.load_state_dict(load_state_dict("models/controlnet/control_sd15_canny.pth", location=device))
     model = model.to(device)
     ddim_sampler = DDIMSampler(model)
 
