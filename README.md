@@ -1,6 +1,7 @@
 # H2O Image Styling Art Studio
-Style images and have fun.
-<a href="https://discord.gg/acxtUF95YV"><img src="https://seeklogo.com/images/D/discord-logo-134E148657-seeklogo.com.png" alt="DiscordLogo" width="60" height="60"></a> 
+<img width="472" alt="art_studio" src="https://user-images.githubusercontent.com/1318029/234158206-55d8328e-0ea8-4f9d-9b3f-07d8c4eae7de.png">
+
+Create images/art and have fun. <a href="https://discord.gg/acxtUF95YV"><img src="https://seeklogo.com/images/D/discord-logo-134E148657-seeklogo.com.png" alt="DiscordLogo" width="60" height="60"></a> 
 
 Web app built using H2O <img width="80" alt="logo" src="https://user-images.githubusercontent.com/1318029/200458962-4de45eb3-2403-4fe6-b76c-1b92adf31a2c.png"> [SDK](https://github.com/h2oai/wave), Realtime Web Apps and Dashboards for Python and R. 
 Currently, the Art Studio supports the following options for image generation,
