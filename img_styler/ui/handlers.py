@@ -335,7 +335,6 @@ async def prompt_apply(q: Q):
         q.client.prompt_temp = q.args.prompt_temp
         q.client.prompt_cond_scale = q.args.prompt_cond_scale
         seeds = [random_seed]
-
     elif q.client.prompt_model == "prompt_controlnet":
         logger.info(f"Strength: {q.args.prompt_strength}")
         res_path = get_image_samples(
@@ -344,7 +343,7 @@ async def prompt_apply(q: Q):
             output_path=OUTPUT_PATH,
             seed=random_seed,
             num_samples=no_images,
-            strength=q.args.prompt_strength,
+            strength=check_input_value(q.args.prompt_strength, float, 1),
         )
 
         q.client.prompt_strength = q.args.prompt_strength

@@ -28,18 +28,19 @@ def get_image_samples(
     ddim_steps=20,
     guess_mode=False,
     strength=1.0,
-    scale=9.0,
+    scale=5.0,
     eta=0.0,
     low_threshold=100,
-    high_threshold=200
+    high_threshold=200,
 ):
     input_image = cv2.imread(input_img_path)
     apply_canny = CannyDetector()
 
     dirname = os.path.dirname(__file__)
-    model = create_model(os.path.join(dirname, 'models/cldm_v15.yaml')).cpu()
-    model.load_state_dict(load_state_dict('models/control_sd15_canny.pth', location='cuda'))
-    model = model.cuda()
+    model = create_model(os.path.join(dirname, "models/cldm_v15.yaml")).cpu()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.load_state_dict(load_state_dict("models/control_sd15_canny.pth", location=device))
+    model = model.to(device)
     ddim_sampler = DDIMSampler(model)
 
     with torch.no_grad():
@@ -51,7 +52,7 @@ def get_image_samples(
 
         control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)
-        control = einops.rearrange(control, 'b h w c -> b c h w').clone()
+        control = einops.rearrange(control, "b h w c -> b c h w").clone()
 
         if seed == -1:
             seed = random.randint(0, 65535)
@@ -59,22 +60,42 @@ def get_image_samples(
 
         model.low_vram_shift(is_diffusing=False)
 
-        cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([prompt + ', ' + a_prompt] * num_samples)]}
-        un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
+        cond = {
+            "c_concat": [control],
+            "c_crossattn": [model.get_learned_conditioning([prompt + ", " + a_prompt] * num_samples)],
+        }
+        un_cond = {
+            "c_concat": None if guess_mode else [control],
+            "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)],
+        }
         shape = (4, H // 8, W // 8)
 
         model.low_vram_shift(is_diffusing=True)
 
-        model.control_scales = [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)  # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
-        samples, _ = ddim_sampler.sample(ddim_steps, num_samples,
-                                         shape, cond, verbose=False, eta=eta,
-                                         unconditional_guidance_scale=scale,
-                                         unconditional_conditioning=un_cond)
+        model.control_scales = (
+            [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
+        )  # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
+        samples, _ = ddim_sampler.sample(
+            ddim_steps,
+            num_samples,
+            shape,
+            cond,
+            verbose=False,
+            eta=eta,
+            unconditional_guidance_scale=scale,
+            unconditional_conditioning=un_cond,
+        )
 
         model.low_vram_shift(is_diffusing=False)
 
         x_samples = model.decode_first_stage(samples)
-        x_samples = (einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
+        x_samples = (
+            (einops.rearrange(x_samples, "b c h w -> b h w c") * 127.5 + 127.5)
+            .cpu()
+            .numpy()
+            .clip(0, 255)
+            .astype(np.uint8)
+        )
 
         results = [x_samples[i] for i in range(num_samples)]
 
