@@ -32,6 +32,7 @@ def get_image_samples(
     eta=0.0,
     low_threshold=100,
     high_threshold=200,
+    save_memory=True,
 ):
     input_image = cv2.imread(input_img_path)
     apply_canny = CannyDetector()
@@ -58,7 +59,8 @@ def get_image_samples(
             seed = random.randint(0, 65535)
         seed_everything(seed)
 
-        model.low_vram_shift(is_diffusing=False)
+        if save_memory:
+            model.low_vram_shift(is_diffusing=False)
 
         cond = {
             "c_concat": [control],
@@ -70,7 +72,8 @@ def get_image_samples(
         }
         shape = (4, H // 8, W // 8)
 
-        model.low_vram_shift(is_diffusing=True)
+        if save_memory:
+            model.low_vram_shift(is_diffusing=False)
 
         model.control_scales = (
             [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
@@ -86,7 +89,8 @@ def get_image_samples(
             unconditional_conditioning=un_cond,
         )
 
-        model.low_vram_shift(is_diffusing=False)
+        if save_memory:
+            model.low_vram_shift(is_diffusing=False)
 
         x_samples = model.decode_first_stage(samples)
         x_samples = (

@@ -189,12 +189,33 @@ async def update_processed_face(q: Q, save=False):
                                 tooltip="Number of image samples to generate.",
                             ),
                             ui.slider(
+                                name="prompt_resolution",
+                                label="Image Resolution",
+                                min=256,
+                                max=768,
+                                step=64,
+                                value=q.client.prompt_resolution or 512,
+                            ),
+                            ui.slider(
                                 name="prompt_strength",
                                 label="Control Strength",
                                 min=0.0,
                                 max=2.0,
+                                step=0.01,
+                                value=q.client.prompt_strength or 1.0,
+                            ),
+                            ui.slider(
+                                name="prompt_scale",
+                                label="Guidance Scale",
+                                min=0.1,
+                                max=30.0,
                                 step=0.1,
-                                value=q.client.prompt_strength,
+                                value=q.client.prompt_scale or 9.0,
+                            ),
+                            ui.checkbox(
+                                name="prompt_save_memory",
+                                label="Save Memory",
+                                value=q.client.prompt_save_memory or True
                             ),
                             ui.textbox(
                                 name="prompt_a",
