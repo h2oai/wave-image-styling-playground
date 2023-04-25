@@ -1,4 +1,4 @@
-# Reference: https://github.com/lllyasviel/ControlNet/blob/main/gradio_canny2image.py
+# https://github.com/lllyasviel/ControlNet/blob/main/gradio_scribble2image.py
 
 import gc
 import os
@@ -10,8 +10,7 @@ import torch
 import random
 
 from pytorch_lightning import seed_everything
-from img_styler.image_prompt.control_net.annotator.util import resize_image, HWC3
-from img_styler.image_prompt.control_net.annotator.canny import CannyDetector
+from annotator.util import resize_image, HWC3
 from img_styler.image_prompt.control_net.cldm.model import create_model, load_state_dict
 from img_styler.image_prompt.control_net.cldm.ddim_hacked import DDIMSampler
 
@@ -30,25 +29,21 @@ def get_image_samples(
     strength=1.0,
     scale=5.0,
     eta=0.0,
-    low_threshold=100,
-    high_threshold=200,
 ):
     input_image = cv2.imread(input_img_path)
-    apply_canny = CannyDetector()
 
     dirname = os.path.dirname(__file__)
     model = create_model(os.path.join(dirname, "models/cldm_v15.yaml")).cpu()
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.load_state_dict(load_state_dict("models/control_sd15_canny.pth", location=device))
-    model = model.to(device)
+    model.load_state_dict(load_state_dict("models/control_sd15_scribble.pth", location="cuda"))
+    model = model.cuda()
     ddim_sampler = DDIMSampler(model)
 
     with torch.no_grad():
         img = resize_image(HWC3(input_image), image_resolution)
         H, W, C = img.shape
 
-        detected_map = apply_canny(img, low_threshold, high_threshold)
-        detected_map = HWC3(detected_map)
+        detected_map = np.zeros_like(img, dtype=np.uint8)
+        detected_map[np.min(img, axis=2) < 127] = 255
 
         control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)
@@ -75,7 +70,7 @@ def get_image_samples(
         model.control_scales = (
             [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
         )  # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
-        samples, _ = ddim_sampler.sample(
+        samples, intermediates = ddim_sampler.sample(
             ddim_steps,
             num_samples,
             shape,
