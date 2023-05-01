@@ -10,12 +10,12 @@ import torch
 import random
 
 from pytorch_lightning import seed_everything
-from annotator.util import resize_image, HWC3
+from img_styler.image_prompt.control_net.annotator.util import resize_image, HWC3
 from img_styler.image_prompt.control_net.cldm.model import create_model, load_state_dict
 from img_styler.image_prompt.control_net.cldm.ddim_hacked import DDIMSampler
 
 
-def get_image_samples(
+def get_scribble_image_samples(
     input_img_path,
     prompt,
     seed,
@@ -29,12 +29,13 @@ def get_image_samples(
     strength=1.0,
     scale=5.0,
     eta=0.0,
+    save_memory=True,
 ):
     input_image = cv2.imread(input_img_path)
 
     dirname = os.path.dirname(__file__)
     model = create_model(os.path.join(dirname, "models/cldm_v15.yaml")).cpu()
-    model.load_state_dict(load_state_dict("models/control_sd15_scribble.pth", location="cuda"))
+    model.load_state_dict(load_state_dict("models/controlnet/control_sd15_scribble.pth", location="cuda"))
     model = model.cuda()
     ddim_sampler = DDIMSampler(model)
 
@@ -53,7 +54,8 @@ def get_image_samples(
             seed = random.randint(0, 65535)
         seed_everything(seed)
 
-        model.low_vram_shift(is_diffusing=False)
+        if save_memory:
+            model.low_vram_shift(is_diffusing=False)
 
         cond = {
             "c_concat": [control],
@@ -65,12 +67,13 @@ def get_image_samples(
         }
         shape = (4, H // 8, W // 8)
 
-        model.low_vram_shift(is_diffusing=True)
+        if save_memory:
+            model.low_vram_shift(is_diffusing=True)
 
         model.control_scales = (
             [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
         )  # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
-        samples, intermediates = ddim_sampler.sample(
+        samples, _ = ddim_sampler.sample(
             ddim_steps,
             num_samples,
             shape,
@@ -81,7 +84,8 @@ def get_image_samples(
             unconditional_conditioning=un_cond,
         )
 
-        model.low_vram_shift(is_diffusing=False)
+        if save_memory:
+            model.low_vram_shift(is_diffusing=False)
 
         x_samples = model.decode_first_stage(samples)
         x_samples = (
