@@ -68,7 +68,7 @@ def get_scribble_image_samples(
         shape = (4, H // 8, W // 8)
 
         if save_memory:
-            model.low_vram_shift(is_diffusing=False)
+            model.low_vram_shift(is_diffusing=True)
 
         model.control_scales = (
             [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)

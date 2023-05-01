@@ -30,8 +30,8 @@ def get_canny_image_samples(
     strength=1.0,
     scale=5.0,
     eta=0.0,
-    low_threshold=100,
-    high_threshold=200,
+    low_threshold=255 / 3,
+    high_threshold=255,
     save_memory=True,
 ):
     input_image = cv2.imread(input_img_path)
@@ -73,7 +73,7 @@ def get_canny_image_samples(
         shape = (4, H // 8, W // 8)
 
         if save_memory:
-            model.low_vram_shift(is_diffusing=False)
+            model.low_vram_shift(is_diffusing=True)
 
         model.control_scales = (
             [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
