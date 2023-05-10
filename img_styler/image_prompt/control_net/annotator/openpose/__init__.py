@@ -6,7 +6,7 @@ import numpy as np
 from . import util
 from .body import Body
 from .hand import Hand
-from annotator.util import annotator_ckpts_path
+from img_styler.image_prompt.control_net.annotator.util import annotator_ckpts_path
 
 
 body_model_path = "https://huggingface.co/lllyasviel/ControlNet/resolve/main/annotator/ckpts/body_pose_model.pth"

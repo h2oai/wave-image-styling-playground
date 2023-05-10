@@ -10,7 +10,7 @@ from .midas.dpt_depth import DPTDepthModel
 from .midas.midas_net import MidasNet
 from .midas.midas_net_custom import MidasNet_small
 from .midas.transforms import Resize, NormalizeImage, PrepareForNet
-from annotator.util import annotator_ckpts_path
+from img_styler.image_prompt.control_net.annotator.util import annotator_ckpts_path
 
 
 ISL_PATHS = {
@@ -166,4 +166,3 @@ class MiDaSInference(nn.Module):
         with torch.no_grad():
             prediction = self.model(x)
         return prediction
-

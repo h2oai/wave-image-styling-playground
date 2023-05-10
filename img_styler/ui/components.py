@@ -3,6 +3,8 @@ from typing import Optional
 
 from h2o_wave import Q, ui
 
+from img_styler.image_prompt.control_net.image2image import ControlNetMode
+
 from ..utils.dataops import img2buf
 from .layouts import get_layouts
 
@@ -467,10 +469,12 @@ def get_controls(q: Q):
                     ui.choice_group(
                         name="choice_group_controlnet",
                         label="Options",
-                        value=q.client.choice_group_controlnet or "checkbox_canny",
+                        value=q.client.choice_group_controlnet or ControlNetMode.CANNY,
                         choices=[
-                            ui.choice(name="checkbox_canny", label="Canny2Image"),
-                            ui.choice(name="checkbox_scribble", label="Scribble2Image"),
+                            ui.choice(name=ControlNetMode.CANNY, label="Canny2Image"),
+                            ui.choice(name=ControlNetMode.SCRIBBLE, label="Scribble2Image"),
+                            ui.choice(name=ControlNetMode.DEPTH, label="Depth2Image"),
+                            ui.choice(name=ControlNetMode.HED, label="HED2Image"),
                         ],
                         trigger=True,
                         tooltip="Stable Diffusion is a text-to-image latent diffusion model, created by the researchers and engineers from CompVis, Stability AI and LAION.",

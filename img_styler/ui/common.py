@@ -4,6 +4,8 @@ import random
 
 from h2o_wave import Q, ui
 
+from img_styler.image_prompt.control_net.image2image import ControlNetMode
+
 from ..utils.dataops import img2buf
 from .components import (
     display_grid_view,
@@ -227,7 +229,43 @@ async def update_processed_face(q: Q, save=False):
                                 label="Negative Prompt",
                                 value=q.client.prompt_n or "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
                             ),
-                        ],
+                            ui.slider(
+                                name="prompt_ddim_steps",
+                                label="Steps",
+                                min=1,
+                                max=100,
+                                step=1,
+                                value=q.client.prompt_ddim_steps or 20,
+                            ),
+                            ui.checkbox(
+                                name="prompt_guess_mode",
+                                label="Guess Mode",
+                                value=q.client.prompt_guess_mode or False,
+                            ),
+                            ui.spinbox(
+                                name="prompt_eta",
+                                label="eta (DDIM)",
+                                value=q.client.prompt_eta or 0,
+                                step=0.1,
+                            ),
+                        ] + ([
+                            ui.slider(
+                                name="prompt_low_threshold",
+                                label="Canny low threshold",
+                                min=1,
+                                max=255,
+                                step=1,
+                                value=q.client.prompt_low_threshold or 100,
+                            ),
+                            ui.slider(
+                                name="prompt_high_threshold",
+                                label="Canny high threshold",
+                                min=1,
+                                max=255,
+                                step=1,
+                                value=q.client.prompt_low_threshold or 200,
+                            ),
+                        ] if q.args.choice_group_controlnet == ControlNetMode.CANNY else []),
                     )
                 ]
                 image_paths.append(q.client.source_face)

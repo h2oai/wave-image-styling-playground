@@ -1,5 +1,4 @@
 # Reference: https://github.com/lllyasviel/ControlNet/blob/main/gradio_canny2image.py
-
 import gc
 import os
 
@@ -10,21 +9,32 @@ import torch
 import random
 
 from pytorch_lightning import seed_everything
+from img_styler.image_prompt.control_net.annotator.hed import HEDdetector
+from img_styler.image_prompt.control_net.annotator.midas import MidasDetector
 from img_styler.image_prompt.control_net.annotator.util import resize_image, HWC3
 from img_styler.image_prompt.control_net.annotator.canny import CannyDetector
 from img_styler.image_prompt.control_net.cldm.model import create_model, load_state_dict
 from img_styler.image_prompt.control_net.cldm.ddim_hacked import DDIMSampler
 
 
-def get_canny_image_samples(
+class ControlNetMode:
+    CANNY = "canny"
+    SCRIBBLE = "scribble"
+    DEPTH = "depth"
+    HED = "hed"
+
+
+def get_controlnet_image_samples(
     input_img_path,
     prompt,
     seed,
+    mode=ControlNetMode.CANNY,
     output_path="",
     a_prompt="",
     n_prompt="",
     num_samples=1,
     image_resolution=256,
+    detect_resolution=256,
     ddim_steps=20,
     guess_mode=False,
     strength=1.0,
@@ -35,21 +45,40 @@ def get_canny_image_samples(
     save_memory=True,
 ):
     input_image = cv2.imread(input_img_path)
-    apply_canny = CannyDetector()
 
     dirname = os.path.dirname(__file__)
     model = create_model(os.path.join(dirname, "models/cldm_v15.yaml")).cpu()
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.load_state_dict(load_state_dict("models/controlnet/control_sd15_canny.pth", location=device))
-    model = model.to(device)
-    ddim_sampler = DDIMSampler(model)
 
     with torch.no_grad():
         img = resize_image(HWC3(input_image), image_resolution)
         H, W, C = img.shape
 
-        detected_map = apply_canny(img, low_threshold, high_threshold)
-        detected_map = HWC3(detected_map)
+        if mode == ControlNetMode.CANNY:
+            model_path = "models/controlnet/control_sd15_canny.pth"
+            apply_canny = CannyDetector()
+            detected_map = apply_canny(img, low_threshold, high_threshold)
+            detected_map = HWC3(detected_map)
+        elif mode == ControlNetMode.DEPTH:
+            model_path = "models/controlnet/control_sd15_depth.pth"
+            apply_midas = MidasDetector()
+            detected_map, _ = apply_midas(resize_image(input_image, detect_resolution))
+            detected_map = HWC3(detected_map)
+            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
+        elif mode == ControlNetMode.SCRIBBLE:
+            model_path = "models/controlnet/control_sd15_scribble.pth"
+            detected_map = np.zeros_like(img, dtype=np.uint8)
+            detected_map[np.min(img, axis=2) < 127] = 255
+        elif mode == ControlNetMode.HED:
+            model_path = "models/controlnet/control_sd15_hed.pth"
+            apply_hed = HEDdetector()
+            detected_map = apply_hed(resize_image(input_image, detect_resolution))
+            detected_map = HWC3(detected_map)
+            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
+
+        model.load_state_dict(load_state_dict(model_path, location=device))
+        model = model.to(device)
+        ddim_sampler = DDIMSampler(model)
 
         control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)

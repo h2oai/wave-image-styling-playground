@@ -3,7 +3,7 @@ import cv2
 import os
 import torch
 from einops import rearrange
-from annotator.util import annotator_ckpts_path
+from img_styler.image_prompt.control_net.annotator.util import annotator_ckpts_path
 
 
 class Network(torch.nn.Module):
