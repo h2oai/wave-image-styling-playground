@@ -362,6 +362,9 @@ async def prompt_apply(q: Q):
             eta=q.args.prompt_eta,
             low_threshold=q.args.prompt_low_threshold,
             high_threshold=q.args.prompt_high_threshold,
+            value_threshold=q.args.prompt_value_threshold,
+            distance_threshold=q.args.prompt_distance_threshold,
+            bg_threshold=q.args.prompt_bg_threshold,
         )
 
         q.client.prompt_resolution = q.args.prompt_resolution
@@ -375,6 +378,9 @@ async def prompt_apply(q: Q):
         q.client.eta = q.args.eta
         q.client.low_threshold = q.args.low_threshold
         q.client.high_threshold = q.args.high_threshold
+        q.client.value_threshold = q.args.value_threshold
+        q.client.distance_threshold = q.args.distance_threshold
+        q.client.bg_threshold = q.args.bg_threshold
         seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox
