@@ -30,7 +30,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 
 
 def get_model_complexity_info(model,

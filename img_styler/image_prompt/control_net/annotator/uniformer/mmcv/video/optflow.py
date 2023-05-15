@@ -4,9 +4,9 @@ import warnings
 import cv2
 import numpy as np
 
-from annotator.uniformer.mmcv.arraymisc import dequantize, quantize
-from annotator.uniformer.mmcv.image import imread, imwrite
-from annotator.uniformer.mmcv.utils import is_str
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.arraymisc import dequantize, quantize
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.image import imread, imwrite
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import is_str
 
 
 def flowread(flow_or_path, quantize=False, concat_axis=0, *args, **kwargs):

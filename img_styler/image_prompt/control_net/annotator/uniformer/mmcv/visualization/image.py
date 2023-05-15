@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 
-from annotator.uniformer.mmcv.image import imread, imwrite
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.image import imread, imwrite
 from .color import color_val
 
 

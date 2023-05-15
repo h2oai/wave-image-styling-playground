@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 
-from annotator.uniformer.mmcv.utils import TORCH_VERSION, digit_version
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import TORCH_VERSION, digit_version
 from .registry import MODULE_WRAPPERS
 from .scatter_gather import scatter_kwargs
 

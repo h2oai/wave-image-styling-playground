@@ -3,7 +3,7 @@ import os
 import numpy as np
 import torch
 
-from annotator.uniformer.mmcv.utils import deprecated_api_warning
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import deprecated_api_warning
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(

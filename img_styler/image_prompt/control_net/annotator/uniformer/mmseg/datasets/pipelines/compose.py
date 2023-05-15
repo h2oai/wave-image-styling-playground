@@ -1,6 +1,6 @@
 import collections
 
-from annotator.uniformer.mmcv.utils import build_from_cfg
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import build_from_cfg
 
 from ..builder import PIPELINES
 

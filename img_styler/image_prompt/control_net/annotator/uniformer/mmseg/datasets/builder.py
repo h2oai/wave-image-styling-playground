@@ -4,10 +4,10 @@ import random
 from functools import partial
 
 import numpy as np
-from annotator.uniformer.mmcv.parallel import collate
-from annotator.uniformer.mmcv.runner import get_dist_info
-from annotator.uniformer.mmcv.utils import Registry, build_from_cfg
-from annotator.uniformer.mmcv.utils.parrots_wrapper import DataLoader, PoolDataLoader
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.parallel import collate
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import get_dist_info
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import Registry, build_from_cfg
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils.parrots_wrapper import DataLoader, PoolDataLoader
 from torch.utils.data import DistributedSampler
 
 if platform.system() != 'Windows':

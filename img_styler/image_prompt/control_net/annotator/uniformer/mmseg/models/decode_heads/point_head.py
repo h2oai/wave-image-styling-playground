@@ -2,11 +2,11 @@
 
 import torch
 import torch.nn as nn
-from annotator.uniformer.mmcv.cnn import ConvModule, normal_init
-from annotator.uniformer.mmcv.ops import point_sample
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule, normal_init
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.ops import point_sample
 
-from annotator.uniformer.mmseg.models.builder import HEADS
-from annotator.uniformer.mmseg.ops import resize
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.models.builder import HEADS
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.ops import resize
 from ..losses import accuracy
 from .cascade_decode_head import BaseCascadeDecodeHead
 

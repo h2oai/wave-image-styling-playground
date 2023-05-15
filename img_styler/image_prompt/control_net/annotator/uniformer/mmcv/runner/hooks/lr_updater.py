@@ -2,7 +2,7 @@
 import numbers
 from math import cos, pi
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 from .hook import HOOKS, Hook
 
 

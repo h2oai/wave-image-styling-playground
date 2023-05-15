@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from annotator.uniformer.mmcv.cnn import ConvModule, xavier_init
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule, xavier_init
 
 from ..builder import NECKS
 

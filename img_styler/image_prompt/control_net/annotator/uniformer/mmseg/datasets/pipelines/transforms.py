@@ -1,6 +1,6 @@
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import numpy as np
-from annotator.uniformer.mmcv.utils import deprecated_api_warning, is_tuple_of
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import deprecated_api_warning, is_tuple_of
 from numpy import random
 
 from ..builder import PIPELINES

@@ -85,7 +85,7 @@ def bilinear_grid_sample(im, grid, align_corners=False):
 
 
 def is_in_onnx_export_without_custom_ops():
-    from annotator.uniformer.mmcv.ops import get_onnxruntime_op_path
+    from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.ops import get_onnxruntime_op_path
     ort_custom_op_path = get_onnxruntime_op_path()
     return torch.onnx.is_in_onnx_export(
     ) and not osp.exists(ort_custom_op_path)

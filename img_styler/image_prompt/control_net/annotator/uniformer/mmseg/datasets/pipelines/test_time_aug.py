@@ -1,6 +1,6 @@
 import warnings
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 
 from ..builder import PIPELINES
 from .compose import Compose

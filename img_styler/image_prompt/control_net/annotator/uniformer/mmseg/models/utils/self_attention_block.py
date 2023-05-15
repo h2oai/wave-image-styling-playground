@@ -1,5 +1,5 @@
 import torch
-from annotator.uniformer.mmcv.cnn import ConvModule, constant_init
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule, constant_init
 from torch import nn as nn
 from torch.nn import functional as F
 

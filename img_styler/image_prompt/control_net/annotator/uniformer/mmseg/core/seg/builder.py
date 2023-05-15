@@ -1,4 +1,4 @@
-from annotator.uniformer.mmcv.utils import Registry, build_from_cfg
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import Registry, build_from_cfg
 
 PIXEL_SAMPLERS = Registry('pixel sampler')
 

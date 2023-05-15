@@ -7,10 +7,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd.function import Function, once_differentiable
 
-from annotator.uniformer.mmcv import deprecated_api_warning
-from annotator.uniformer.mmcv.cnn import constant_init, xavier_init
-from annotator.uniformer.mmcv.cnn.bricks.registry import ATTENTION
-from annotator.uniformer.mmcv.runner import BaseModule
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv import deprecated_api_warning
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import constant_init, xavier_init
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn.bricks.registry import ATTENTION
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import BaseModule
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(

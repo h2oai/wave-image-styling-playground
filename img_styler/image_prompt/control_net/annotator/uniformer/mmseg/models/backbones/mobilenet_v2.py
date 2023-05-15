@@ -1,8 +1,8 @@
 import logging
 
 import torch.nn as nn
-from annotator.uniformer.mmcv.cnn import ConvModule, constant_init, kaiming_init
-from annotator.uniformer.mmcv.runner import load_checkpoint
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule, constant_init, kaiming_init
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from ..builder import BACKBONES

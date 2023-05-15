@@ -9,7 +9,7 @@ class DefaultRunnerConstructor:
     For example, We can inject some new properties and functions for `Runner`.
 
     Example:
-        >>> from annotator.uniformer.mmcv.runner import RUNNER_BUILDERS, build_runner
+        >>> from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import RUNNER_BUILDERS, build_runner
         >>> # Define a new RunnerReconstructor
         >>> @RUNNER_BUILDERS.register_module()
         >>> class MyRunnerConstructor:

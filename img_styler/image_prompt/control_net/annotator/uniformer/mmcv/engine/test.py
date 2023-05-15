@@ -8,8 +8,8 @@ import time
 import torch
 import torch.distributed as dist
 
-import annotator.uniformer.mmcv as mmcv
-from annotator.uniformer.mmcv.runner import get_dist_info
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import get_dist_info
 
 
 def single_gpu_test(model, data_loader):

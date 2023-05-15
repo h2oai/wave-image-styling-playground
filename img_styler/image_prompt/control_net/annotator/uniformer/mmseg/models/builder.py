@@ -1,7 +1,7 @@
 import warnings
 
-from annotator.uniformer.mmcv.cnn import MODELS as MMCV_MODELS
-from annotator.uniformer.mmcv.utils import Registry
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import MODELS as MMCV_MODELS
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import Registry
 
 MODELS = Registry('models', parent=MMCV_MODELS)
 

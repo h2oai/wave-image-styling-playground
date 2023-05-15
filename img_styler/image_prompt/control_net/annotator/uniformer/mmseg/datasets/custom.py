@@ -3,14 +3,14 @@ import os.path as osp
 from collections import OrderedDict
 from functools import reduce
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import numpy as np
-from annotator.uniformer.mmcv.utils import print_log
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import print_log
 from prettytable import PrettyTable
 from torch.utils.data import Dataset
 
-from annotator.uniformer.mmseg.core import eval_metrics
-from annotator.uniformer.mmseg.utils import get_root_logger
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.core import eval_metrics
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.utils import get_root_logger
 from .builder import DATASETS
 from .pipelines import Compose
 

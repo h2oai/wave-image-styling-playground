@@ -3,7 +3,7 @@ import torch
 from torch import nn as nn
 from torch.autograd import Function
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 from ..utils import ext_loader
 
 ext_module = ext_loader.load_ext(

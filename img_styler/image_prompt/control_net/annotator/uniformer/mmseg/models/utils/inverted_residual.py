@@ -1,4 +1,4 @@
-from annotator.uniformer.mmcv.cnn import ConvModule
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule
 from torch import nn
 from torch.utils import checkpoint as cp
 

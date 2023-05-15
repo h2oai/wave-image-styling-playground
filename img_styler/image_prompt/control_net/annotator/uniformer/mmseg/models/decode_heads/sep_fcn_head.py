@@ -1,4 +1,4 @@
-from annotator.uniformer.mmcv.cnn import DepthwiseSeparableConvModule
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import DepthwiseSeparableConvModule
 
 from ..builder import HEADS
 from .fcn_head import FCNHead

@@ -2,7 +2,7 @@
 ch/lovasz_losses.py Lovasz-Softmax and Jaccard hinge loss in PyTorch Maxim
 Berman 2018 ESAT-PSI KU Leuven (MIT License)"""
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

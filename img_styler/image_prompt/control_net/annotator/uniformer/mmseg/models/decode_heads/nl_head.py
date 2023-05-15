@@ -1,5 +1,5 @@
 import torch
-from annotator.uniformer.mmcv.cnn import NonLocal2d
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import NonLocal2d
 
 from ..builder import HEADS
 from .fcn_head import FCNHead

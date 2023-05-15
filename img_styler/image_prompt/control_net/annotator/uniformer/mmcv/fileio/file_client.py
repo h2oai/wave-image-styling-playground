@@ -11,9 +11,9 @@ from pathlib import Path
 from typing import Iterable, Iterator, Optional, Tuple, Union
 from urllib.request import urlopen
 
-import annotator.uniformer.mmcv as mmcv
-from annotator.uniformer.mmcv.utils.misc import has_method
-from annotator.uniformer.mmcv.utils.path import is_filepath
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils.misc import has_method
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils.path import is_filepath
 
 
 class BaseStorageBackend(metaclass=ABCMeta):

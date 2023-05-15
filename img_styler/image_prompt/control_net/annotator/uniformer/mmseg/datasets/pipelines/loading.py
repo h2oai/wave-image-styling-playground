@@ -1,6 +1,6 @@
 import os.path as osp
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import numpy as np
 
 from ..builder import PIPELINES

@@ -2,11 +2,11 @@ from abc import ABCMeta, abstractmethod
 
 import torch
 import torch.nn as nn
-from annotator.uniformer.mmcv.cnn import normal_init
-from annotator.uniformer.mmcv.runner import auto_fp16, force_fp32
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import normal_init
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import auto_fp16, force_fp32
 
-from annotator.uniformer.mmseg.core import build_pixel_sampler
-from annotator.uniformer.mmseg.ops import resize
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.core import build_pixel_sampler
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.ops import resize
 from ..builder import build_loss
 from ..losses import accuracy
 

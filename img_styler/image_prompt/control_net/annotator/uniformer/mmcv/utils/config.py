@@ -213,7 +213,7 @@ class Config:
                 # delete imported module
                 del sys.modules[temp_module_name]
             elif filename.endswith(('.yml', '.yaml', '.json')):
-                import annotator.uniformer.mmcv as mmcv
+                import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
                 cfg_dict = mmcv.load(temp_config_file.name)
             # close temp file
             temp_config_file.close()
@@ -540,7 +540,7 @@ class Config:
                 with open(file, 'w', encoding='utf-8') as f:
                     f.write(self.pretty_text)
         else:
-            import annotator.uniformer.mmcv as mmcv
+            import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
             if file is None:
                 file_format = self.filename.split('.')[-1]
                 return mmcv.dump(cfg_dict, file_format=file_format)

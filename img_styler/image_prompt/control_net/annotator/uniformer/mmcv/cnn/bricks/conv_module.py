@@ -3,7 +3,7 @@ import warnings
 
 import torch.nn as nn
 
-from annotator.uniformer.mmcv.utils import _BatchNorm, _InstanceNorm
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import _BatchNorm, _InstanceNorm
 from ..utils import constant_init, kaiming_init
 from .activation import build_activation_layer
 from .conv import build_conv_layer

@@ -1,4 +1,4 @@
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 
 
 def cityscapes_classes():

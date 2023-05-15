@@ -10,7 +10,7 @@ from socket import gethostname
 import numpy as np
 import torch
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 
 
 def get_host_info():

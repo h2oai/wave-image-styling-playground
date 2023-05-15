@@ -3,12 +3,12 @@ import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import numpy as np
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-from annotator.uniformer.mmcv.runner import auto_fp16
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import auto_fp16
 
 
 class BaseSegmentor(nn.Module):

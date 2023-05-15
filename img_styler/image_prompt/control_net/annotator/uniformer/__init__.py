@@ -1,8 +1,8 @@
 import os
 
-from annotator.uniformer.mmseg.apis import init_segmentor, inference_segmentor, show_result_pyplot
-from annotator.uniformer.mmseg.core.evaluation import get_palette
-from annotator.util import annotator_ckpts_path
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.apis import init_segmentor, inference_segmentor, show_result_pyplot
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.core.evaluation import get_palette
+from img_styler.image_prompt.control_net.annotator.util import annotator_ckpts_path
 
 
 checkpoint_file = "https://huggingface.co/lllyasviel/ControlNet/resolve/main/annotator/ckpts/upernet_global_small.pth"

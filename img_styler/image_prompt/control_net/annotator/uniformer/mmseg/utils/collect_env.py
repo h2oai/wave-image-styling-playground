@@ -1,7 +1,7 @@
-from annotator.uniformer.mmcv.utils import collect_env as collect_base_env
-from annotator.uniformer.mmcv.utils import get_git_hash
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import collect_env as collect_base_env
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import get_git_hash
 
-import annotator.uniformer.mmseg as mmseg
+import img_styler.image_prompt.control_net.annotator.uniformer.mmseg as mmseg
 
 
 def collect_env():

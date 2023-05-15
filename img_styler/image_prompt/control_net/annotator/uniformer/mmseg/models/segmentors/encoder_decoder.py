@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from annotator.uniformer.mmseg.core import add_prefix
-from annotator.uniformer.mmseg.ops import resize
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.core import add_prefix
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.ops import resize
 from .. import builder
 from ..builder import SEGMENTORS
 from .base import BaseSegmentor

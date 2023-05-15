@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 import torch
 from torch.optim import Optimizer
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 from ..parallel import is_module_wrapper
 from .checkpoint import load_checkpoint
 from .dist_utils import get_dist_info

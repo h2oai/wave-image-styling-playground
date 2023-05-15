@@ -3,7 +3,7 @@ from typing import List
 import torch
 from torch import nn as nn
 
-from annotator.uniformer.mmcv.runner import force_fp32
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import force_fp32
 from .furthest_point_sample import (furthest_point_sample,
                                     furthest_point_sample_with_dist)
 

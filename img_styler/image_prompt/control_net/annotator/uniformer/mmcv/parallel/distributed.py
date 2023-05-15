@@ -3,8 +3,8 @@ import torch
 from torch.nn.parallel.distributed import (DistributedDataParallel,
                                            _find_tensors)
 
-from annotator.uniformer.mmcv import print_log
-from annotator.uniformer.mmcv.utils import TORCH_VERSION, digit_version
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv import print_log
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import TORCH_VERSION, digit_version
 from .scatter_gather import scatter_kwargs
 
 

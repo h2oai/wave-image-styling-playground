@@ -1,6 +1,6 @@
 import logging
 
-from annotator.uniformer.mmcv.utils import get_logger
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import get_logger
 
 
 def get_root_logger(log_file=None, log_level=logging.INFO):

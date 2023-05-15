@@ -4,7 +4,7 @@ from ..builder import HEADS
 from .fcn_head import FCNHead
 
 try:
-    from annotator.uniformer.mmcv.ops import CrissCrossAttention
+    from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.ops import CrissCrossAttention
 except ModuleNotFoundError:
     CrissCrossAttention = None
 

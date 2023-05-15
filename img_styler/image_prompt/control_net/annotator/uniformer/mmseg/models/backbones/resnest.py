@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-from annotator.uniformer.mmcv.cnn import build_conv_layer, build_norm_layer
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import build_conv_layer, build_norm_layer
 
 from ..builder import BACKBONES
 from ..utils import ResLayer

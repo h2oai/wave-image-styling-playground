@@ -1,6 +1,6 @@
 import math
 
-from annotator.uniformer.mmcv.cnn import build_conv_layer, build_norm_layer
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import build_conv_layer, build_norm_layer
 
 from ..builder import BACKBONES
 from ..utils import ResLayer
@@ -111,7 +111,7 @@ class ResNeXt(ResNet):
             in resblocks to let them behave as identity.
 
     Example:
-        >>> from annotator.uniformer.mmseg.models import ResNeXt
+        >>> from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.models import ResNeXt
         >>> import torch
         >>> self = ResNeXt(depth=50)
         >>> self.eval()

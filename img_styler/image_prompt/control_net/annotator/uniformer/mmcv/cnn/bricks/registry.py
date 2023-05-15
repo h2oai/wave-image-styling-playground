@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from annotator.uniformer.mmcv.utils import Registry
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import Registry
 
 CONV_LAYERS = Registry('conv layer')
 NORM_LAYERS = Registry('norm layer')

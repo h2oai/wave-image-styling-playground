@@ -1,4 +1,4 @@
-from annotator.uniformer.mmcv.cnn import build_conv_layer, build_norm_layer
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import build_conv_layer, build_norm_layer
 from torch import nn as nn
 
 

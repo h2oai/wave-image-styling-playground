@@ -1,9 +1,9 @@
 import os.path as osp
 import tempfile
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import numpy as np
-from annotator.uniformer.mmcv.utils import print_log
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import print_log
 from PIL import Image
 
 from .builder import DATASETS

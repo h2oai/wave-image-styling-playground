@@ -99,7 +99,7 @@ import torch
 from torch.autograd import Function
 from torch.nn import functional as F
 
-from annotator.uniformer.mmcv.utils import to_2tuple
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import to_2tuple
 from ..utils import ext_loader
 
 upfirdn2d_ext = ext_loader.load_ext('_ext', ['upfirdn2d'])

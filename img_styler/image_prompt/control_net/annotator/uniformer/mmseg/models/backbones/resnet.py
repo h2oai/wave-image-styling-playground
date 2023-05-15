@@ -1,11 +1,11 @@
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from annotator.uniformer.mmcv.cnn import (build_conv_layer, build_norm_layer, build_plugin_layer,
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import (build_conv_layer, build_norm_layer, build_plugin_layer,
                       constant_init, kaiming_init)
-from annotator.uniformer.mmcv.runner import load_checkpoint
-from annotator.uniformer.mmcv.utils.parrots_wrapper import _BatchNorm
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import load_checkpoint
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils.parrots_wrapper import _BatchNorm
 
-from annotator.uniformer.mmseg.utils import get_root_logger
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.utils import get_root_logger
 from ..builder import BACKBONES
 from ..utils import ResLayer
 
@@ -348,7 +348,7 @@ class ResNet(nn.Module):
             in resblocks to let them behave as identity.
 
     Example:
-        >>> from annotator.uniformer.mmseg.models import ResNet
+        >>> from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.models import ResNet
         >>> import torch
         >>> self = ResNet(depth=18)
         >>> self.eval()

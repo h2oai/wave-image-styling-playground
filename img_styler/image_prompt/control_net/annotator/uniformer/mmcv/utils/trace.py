@@ -2,7 +2,7 @@ import warnings
 
 import torch
 
-from annotator.uniformer.mmcv.utils import digit_version
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import digit_version
 
 
 def is_jit_tracing() -> bool:

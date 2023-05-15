@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from annotator.uniformer.mmcv.cnn import ConvModule, build_upsample_layer
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule, build_upsample_layer
 
 
 class UpConvBlock(nn.Module):

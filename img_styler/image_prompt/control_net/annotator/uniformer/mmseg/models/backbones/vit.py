@@ -7,12 +7,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-from annotator.uniformer.mmcv.cnn import (Conv2d, Linear, build_activation_layer, build_norm_layer,
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import (Conv2d, Linear, build_activation_layer, build_norm_layer,
                       constant_init, kaiming_init, normal_init)
-from annotator.uniformer.mmcv.runner import _load_checkpoint
-from annotator.uniformer.mmcv.utils.parrots_wrapper import _BatchNorm
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import _load_checkpoint
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils.parrots_wrapper import _BatchNorm
 
-from annotator.uniformer.mmseg.utils import get_root_logger
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.utils import get_root_logger
 from ..builder import BACKBONES
 from ..utils import DropPath, trunc_normal_
 

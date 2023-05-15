@@ -1,6 +1,6 @@
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import torch.nn as nn
-from annotator.uniformer.mmcv.cnn import ConvModule
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule
 
 from .make_divisible import make_divisible
 

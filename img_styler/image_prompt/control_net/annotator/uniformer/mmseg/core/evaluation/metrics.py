@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-import annotator.uniformer.mmcv as mmcv
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
 import numpy as np
 import torch
 

@@ -4,7 +4,7 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-from annotator.uniformer.mmcv.cnn import ConvModule
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import ConvModule
 
 from ..builder import HEADS
 from .decode_head import BaseDecodeHead

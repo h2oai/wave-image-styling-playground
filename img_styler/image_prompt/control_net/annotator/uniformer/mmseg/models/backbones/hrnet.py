@@ -1,11 +1,11 @@
 import torch.nn as nn
-from annotator.uniformer.mmcv.cnn import (build_conv_layer, build_norm_layer, constant_init,
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.cnn import (build_conv_layer, build_norm_layer, constant_init,
                       kaiming_init)
-from annotator.uniformer.mmcv.runner import load_checkpoint
-from annotator.uniformer.mmcv.utils.parrots_wrapper import _BatchNorm
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.runner import load_checkpoint
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils.parrots_wrapper import _BatchNorm
 
-from annotator.uniformer.mmseg.ops import Upsample, resize
-from annotator.uniformer.mmseg.utils import get_root_logger
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.ops import Upsample, resize
+from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.utils import get_root_logger
 from ..builder import BACKBONES
 from .resnet import BasicBlock, Bottleneck
 
@@ -229,7 +229,7 @@ class HRNet(nn.Module):
             in resblocks to let them behave as identity.
 
     Example:
-        >>> from annotator.uniformer.mmseg.models import HRNet
+        >>> from img_styler.image_prompt.control_net.annotator.uniformer.mmseg.models import HRNet
         >>> import torch
         >>> extra = dict(
         >>>     stage1=dict(

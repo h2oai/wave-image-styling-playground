@@ -7,9 +7,9 @@ from collections import OrderedDict
 import torch
 import torch.distributed as dist
 
-import annotator.uniformer.mmcv as mmcv
-from annotator.uniformer.mmcv.fileio.file_client import FileClient
-from annotator.uniformer.mmcv.utils import is_tuple_of, scandir
+import img_styler.image_prompt.control_net.annotator.uniformer.mmcv as mmcv
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.fileio.file_client import FileClient
+from img_styler.image_prompt.control_net.annotator.uniformer.mmcv.utils import is_tuple_of, scandir
 from ..hook import HOOKS
 from .base import LoggerHook
 
