@@ -195,12 +195,12 @@ async def update_processed_face(q: Q, save=False):
                         value=q.client.prompt_resolution or 512,
                     ),
                     ui.slider(
-                        name="prompt_strength",
-                        label="Control Strength",
-                        min=0.0,
-                        max=2.0,
-                        step=0.01,
-                        value=q.client.prompt_strength or 1.0,
+                        name="prompt_det_resolution",
+                        label="Detect Resolution",
+                        min=256,
+                        max=768,
+                        step=64,
+                        value=q.client.prompt_det_resolution or 512,
                     ),
                     ui.slider(
                         name="prompt_scale",
@@ -209,11 +209,6 @@ async def update_processed_face(q: Q, save=False):
                         max=30.0,
                         step=0.1,
                         value=q.client.prompt_scale or 9.0,
-                    ),
-                    ui.checkbox(
-                        name="prompt_save_memory",
-                        label="Save Memory",
-                        value=q.client.prompt_save_memory or True
                     ),
                     ui.textbox(
                         name="prompt_a",
@@ -238,12 +233,6 @@ async def update_processed_face(q: Q, save=False):
                         label="Guess Mode",
                         value=q.client.prompt_guess_mode or False,
                     ),
-                    ui.spinbox(
-                        name="prompt_eta",
-                        label="eta (DDIM)",
-                        value=q.client.prompt_eta or 0,
-                        step=0.1,
-                    ),
                 ]
                 if q.args.choice_group_controlnet == ControlNetMode.CANNY:
                     expander_items += [
@@ -264,7 +253,7 @@ async def update_processed_face(q: Q, save=False):
                             value=q.client.prompt_low_threshold or 200,
                         ),
                     ]
-                elif q.args.choice_group_controlnet == ControlNetMode.HOUGH:
+                elif q.args.choice_group_controlnet == ControlNetMode.MLSD:
                     expander_items += [
                         ui.slider(
                             name="prompt_value_threshold",
@@ -281,17 +270,6 @@ async def update_processed_face(q: Q, save=False):
                             max=20.0,
                             step=0.01,
                             value=q.client.prompt_distance_threshold or 0.1,
-                        ),
-                    ]
-                elif q.args.choice_group_controlnet == ControlNetMode.NORMAL:
-                    expander_items += [
-                        ui.slider(
-                            name="prompt_bg_threshold",
-                            label="Normal background threshold",
-                            min=0.0,
-                            max=1.0,
-                            step=0.01,
-                            value=q.client.prompt_bg_threshold or 0.4,
                         ),
                     ]
                 extra_settings = [

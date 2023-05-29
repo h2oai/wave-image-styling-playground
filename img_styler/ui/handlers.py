@@ -347,40 +347,33 @@ async def prompt_apply(q: Q):
         res_path = get_controlnet_image_samples(
             input_img_path=q.client.source_face,
             prompt=q.args.prompt_textbox,
-            output_path=OUTPUT_PATH,
+            output_path=OUTPUT_PATH + "/controlnet.jpg",
             mode=controlnet_mode,
             seed=random_seed,
-            num_samples=no_images,
             image_resolution=check_input_value(q.args.prompt_resolution, int, 512),
+            detect_resolution=check_input_value(q.args.prompt_det_resolution, int, 512),
             scale=check_input_value(q.args.prompt_scale, float, 9.0),
-            save_memory=q.args.prompt_save_memory,
-            strength=check_input_value(q.args.prompt_strength, float, 1),
             a_prompt=q.args.prompt_a,
             n_prompt=q.args.prompt_n,
             ddim_steps=q.args.prompt_ddim_steps,
             guess_mode=q.args.prompt_guess_mode,
-            eta=q.args.prompt_eta,
             low_threshold=q.args.prompt_low_threshold,
             high_threshold=q.args.prompt_high_threshold,
             value_threshold=q.args.prompt_value_threshold,
             distance_threshold=q.args.prompt_distance_threshold,
-            bg_threshold=q.args.prompt_bg_threshold,
         )
 
         q.client.prompt_resolution = q.args.prompt_resolution
+        q.client.prompt_det_resolution = q.args.prompt_det_resolution
         q.client.prompt_scale = q.args.prompt_scale
-        q.client.prompt_save_memory = q.args.prompt_save_memory
-        q.client.prompt_strength = q.args.prompt_strength
         q.client.prompt_a = q.args.prompt_a
         q.client.prompt_n = q.args.prompt_n
         q.client.ddim_steps = q.args.ddim_steps
         q.client.guess_mode = q.args.guess_mode
-        q.client.eta = q.args.eta
         q.client.low_threshold = q.args.low_threshold
         q.client.high_threshold = q.args.high_threshold
         q.client.value_threshold = q.args.value_threshold
         q.client.distance_threshold = q.args.distance_threshold
-        q.client.bg_threshold = q.args.bg_threshold
         seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox

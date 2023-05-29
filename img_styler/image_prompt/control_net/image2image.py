@@ -1,35 +1,182 @@
 # Reference: https://github.com/lllyasviel/ControlNet/blob/main/gradio_canny2image.py
 import gc
-import os
 
 import cv2
-import einops
 import numpy as np
 import torch
-import random
 
-from pytorch_lightning import seed_everything
-from img_styler.image_prompt.control_net.annotator.hed import HEDdetector, nms
-from img_styler.image_prompt.control_net.annotator.midas import MidasDetector
-from img_styler.image_prompt.control_net.annotator.mlsd import MLSDdetector
-from img_styler.image_prompt.control_net.annotator.openpose import OpenposeDetector
-from img_styler.image_prompt.control_net.annotator.uniformer import UniformerDetector
-from img_styler.image_prompt.control_net.annotator.util import resize_image, HWC3
-from img_styler.image_prompt.control_net.annotator.canny import CannyDetector
-from img_styler.image_prompt.control_net.cldm.model import create_model, load_state_dict
-from img_styler.image_prompt.control_net.cldm.ddim_hacked import DDIMSampler
+import PIL.Image
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler
+from controlnet_aux import (CannyDetector, ContentShuffleDetector, HEDdetector,
+                            LineartAnimeDetector, LineartDetector,
+                            MidasDetector, MLSDdetector, NormalBaeDetector,
+                            OpenposeDetector, PidiNetDetector)
+from controlnet_aux.util import HWC3, ade_palette
+from transformers import AutoImageProcessor, UperNetForSemanticSegmentation, pipeline
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class ControlNetMode:
-    CANNY = "canny"
-    SCRIBBLE = "scribble"
-    DEPTH = "depth"
-    HED = "hed"
-    HOUGH = "hough"
-    NORMAL = "normal"
     POSE = "pose"
+    CANNY = "canny"
+    MLSD = "mlsd"
+    SCRIBBLE = "scribble"
+    SOFTEDGE = "softedge"
     SEG = "seg"
-    FAKE_SCRIBBLE = "fake_scribble"
+    DEPTH = "depth"
+    NORMAL = "normal"
+    LINEART = "lineart"
+    LINEART_ANIME = "lineart_anime"
+    SHUFFLE = "shuffle"
+    IP2P = "ip2p"
+    INPAINT = "inpaint"
+
+
+
+CONTROLNET_MODEL_IDS = {
+    ControlNetMode.POSE: 'lllyasviel/control_v11p_sd15_openpose',
+    ControlNetMode.CANNY: 'lllyasviel/control_v11p_sd15_canny',
+    ControlNetMode.MLSD: 'lllyasviel/control_v11p_sd15_mlsd',
+    ControlNetMode.SCRIBBLE: 'lllyasviel/control_v11p_sd15_scribble',
+    ControlNetMode.SOFTEDGE: 'lllyasviel/control_v11p_sd15_softedge',
+    ControlNetMode.SEG: 'lllyasviel/control_v11p_sd15_seg',
+    ControlNetMode.DEPTH: 'lllyasviel/control_v11f1p_sd15_depth',
+    ControlNetMode.NORMAL: 'lllyasviel/control_v11p_sd15_normalbae',
+    ControlNetMode.LINEART: 'lllyasviel/control_v11p_sd15_lineart',
+    ControlNetMode.LINEART_ANIME: 'lllyasviel/control_v11p_sd15s2_lineart_anime',
+    ControlNetMode.SHUFFLE: 'lllyasviel/control_v11e_sd15_shuffle',
+    ControlNetMode.IP2P: 'lllyasviel/control_v11e_sd15_ip2p',
+    ControlNetMode.INPAINT: 'lllyasviel/control_v11e_sd15_inpaint',
+}
+
+
+def resize_image(input_image, resolution, interpolation=None):
+    H, W, C = input_image.shape
+    H = float(H)
+    W = float(W)
+    k = float(resolution) / max(H, W)
+    H *= k
+    W *= k
+    H = int(np.round(H / 64.0)) * 64
+    W = int(np.round(W / 64.0)) * 64
+    if interpolation is None:
+        interpolation = cv2.INTER_LANCZOS4 if k > 1 else cv2.INTER_AREA
+    img = cv2.resize(input_image, (W, H), interpolation=interpolation)
+    return img
+
+
+class DepthEstimator:
+    def __init__(self):
+        self.model = pipeline('depth-estimation')
+
+    def __call__(self, image: np.ndarray, **kwargs) -> PIL.Image.Image:
+        detect_resolution = kwargs.pop('detect_resolution', 512)
+        image_resolution = kwargs.pop('image_resolution', 512)
+        image = np.array(image)
+        image = HWC3(image)
+        image = resize_image(image, resolution=detect_resolution)
+        image = PIL.Image.fromarray(image)
+        image = self.model(image)
+        image = image['depth']
+        image = np.array(image)
+        image = HWC3(image)
+        image = resize_image(image, resolution=image_resolution)
+        return PIL.Image.fromarray(image)
+
+
+class ImageSegmentor:
+    def __init__(self):
+        self.image_processor = AutoImageProcessor.from_pretrained(
+            'openmmlab/upernet-convnext-small')
+        self.image_segmentor = UperNetForSemanticSegmentation.from_pretrained(
+            'openmmlab/upernet-convnext-small')
+
+    @torch.inference_mode()
+    def __call__(self, image: np.ndarray, **kwargs) -> PIL.Image.Image:
+        detect_resolution = kwargs.pop('detect_resolution', 512)
+        image_resolution = kwargs.pop('image_resolution', 512)
+        image = HWC3(image)
+        image = resize_image(image, resolution=detect_resolution)
+        image = PIL.Image.fromarray(image)
+
+        pixel_values = self.image_processor(image,
+                                            return_tensors='pt').pixel_values
+        outputs = self.image_segmentor(pixel_values)
+        seg = self.image_processor.post_process_semantic_segmentation(
+            outputs, target_sizes=[image.size[::-1]])[0]
+        color_seg = np.zeros((seg.shape[0], seg.shape[1], 3), dtype=np.uint8)
+        for label, color in enumerate(ade_palette()):
+            color_seg[seg == label, :] = color
+        color_seg = color_seg.astype(np.uint8)
+
+        color_seg = resize_image(color_seg,
+                                 resolution=image_resolution,
+                                 interpolation=cv2.INTER_NEAREST)
+        return PIL.Image.fromarray(color_seg)
+
+
+class Preprocessor:
+    MODEL_ID = 'lllyasviel/Annotators'
+
+    def __init__(self):
+        self.model = None
+        self.name = ''
+
+    def load(self, name: str) -> None:
+        if name == self.name:
+            return
+        if name == 'HED':
+            self.model = HEDdetector.from_pretrained(self.MODEL_ID)
+        elif name == 'Midas':
+            self.model = MidasDetector.from_pretrained(self.MODEL_ID)
+        elif name == 'MLSD':
+            self.model = MLSDdetector.from_pretrained(self.MODEL_ID)
+        elif name == 'Openpose':
+            self.model = OpenposeDetector.from_pretrained(self.MODEL_ID)
+        elif name == 'PidiNet':
+            self.model = PidiNetDetector.from_pretrained(self.MODEL_ID)
+        elif name == 'NormalBae':
+            self.model = NormalBaeDetector.from_pretrained(self.MODEL_ID)
+        elif name == 'Lineart':
+            self.model = LineartDetector.from_pretrained(self.MODEL_ID)
+        elif name == 'LineartAnime':
+            self.model = LineartAnimeDetector.from_pretrained(self.MODEL_ID)
+        elif name == 'Canny':
+            self.model = CannyDetector()
+        elif name == 'ContentShuffle':
+            self.model = ContentShuffleDetector()
+        elif name == 'DPT':
+            self.model = DepthEstimator()
+        elif name == 'UPerNet':
+            self.model = ImageSegmentor()
+        else:
+            raise ValueError
+        torch.cuda.empty_cache()
+        gc.collect()
+        self.name = name
+
+    def __call__(self, image: PIL.Image.Image, **kwargs) -> PIL.Image.Image:
+        if self.name == 'Canny':
+            if 'detect_resolution' in kwargs:
+                detect_resolution = kwargs.pop('detect_resolution')
+                image = np.array(image)
+                image = HWC3(image)
+                image = resize_image(image, resolution=detect_resolution)
+            image = self.model(image, **kwargs)
+            return PIL.Image.fromarray(image)
+        elif self.name == 'Midas':
+            detect_resolution = kwargs.pop('detect_resolution', 512)
+            image_resolution = kwargs.pop('image_resolution', 512)
+            image = np.array(image)
+            image = HWC3(image)
+            image = resize_image(image, resolution=detect_resolution)
+            image = self.model(image, **kwargs)
+            image = HWC3(image)
+            image = resize_image(image, resolution=image_resolution)
+            return PIL.Image.fromarray(image)
+        else:
+            return self.model(image, **kwargs)
 
 
 def get_controlnet_image_samples(
@@ -40,147 +187,133 @@ def get_controlnet_image_samples(
     output_path="",
     a_prompt="",
     n_prompt="",
-    num_samples=1,
     image_resolution=256,
     detect_resolution=256,
     ddim_steps=20,
     guess_mode=False,
-    strength=1.0,
     scale=5.0,
-    eta=0.0,
-    low_threshold=255 / 3,
-    high_threshold=255,
+    low_threshold=100,
+    high_threshold=200,
     value_threshold=0.1,
     distance_threshold=0.1,
-    bg_threshold=0.4,
-    save_memory=True,
 ):
-    input_image = cv2.imread(input_img_path)
-
-    dirname = os.path.dirname(__file__)
-    model = create_model(os.path.join(dirname, "models/cldm_v15.yaml")).cpu()
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    image = PIL.Image.open(input_img_path)
+    prompt = f"{prompt}, {a_prompt}"
+    preprocessor = Preprocessor()
+    torch.cuda.empty_cache()
+    gc.collect()
 
     with torch.no_grad():
-        img = resize_image(HWC3(input_image), image_resolution)
-        H, W, _ = img.shape
-
         if mode == ControlNetMode.CANNY:
-            model_path = "models/controlnet/control_sd15_canny.pth"
-            apply_canny = CannyDetector()
-            detected_map = apply_canny(img, low_threshold, high_threshold)
-            detected_map = HWC3(detected_map)
-        elif mode == ControlNetMode.DEPTH:
-            model_path = "models/controlnet/control_sd15_depth.pth"
-            apply_midas = MidasDetector()
-            detected_map, _ = apply_midas(resize_image(input_image, detect_resolution))
-            detected_map = HWC3(detected_map)
-            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
+            preprocessor.load("Canny")
+            image = preprocessor(image=image,
+                                 low_threshold=low_threshold,
+                                 high_threshold=high_threshold,
+                                 detect_resolution=image_resolution)
+        elif mode == ControlNetMode.MLSD:
+            preprocessor.load('MLSD')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+                thr_v=value_threshold,
+                thr_d=distance_threshold,
+            )
         elif mode == ControlNetMode.SCRIBBLE:
-            model_path = "models/controlnet/control_sd15_scribble.pth"
-            detected_map = np.zeros_like(img, dtype=np.uint8)
-            detected_map[np.min(img, axis=2) < 127] = 255
-        elif mode == ControlNetMode.HED:
-            model_path = "models/controlnet/control_sd15_hed.pth"
-            apply_hed = HEDdetector()
-            detected_map = apply_hed(resize_image(input_image, detect_resolution))
-            detected_map = HWC3(detected_map)
-            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
-        elif mode == ControlNetMode.HOUGH:
-            model_path = "models/controlnet/control_sd15_mlsd.pth"
-            apply_mlsd = MLSDdetector()
-            detected_map = apply_mlsd(resize_image(input_image, detect_resolution), value_threshold, distance_threshold)
-            detected_map = HWC3(detected_map)
-            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_NEAREST)
-        elif mode == ControlNetMode.NORMAL:
-            model_path = "models/controlnet/control_sd15_normal.pth"
-            apply_midas = MidasDetector()
-            _, detected_map = apply_midas(resize_image(input_image, detect_resolution), bg_th=bg_threshold)
-            detected_map = HWC3(detected_map)
-            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
+            preprocessor.load("HED")
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+                scribble=False,
+            )
+        elif mode == ControlNetMode.SOFTEDGE:
+            preprocessor.load("PidiNet")
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+                scribble=False,
+            )
         elif mode == ControlNetMode.POSE:
-            model_path = "models/controlnet/control_sd15_openpose.pth"
-            apply_openpose = OpenposeDetector()
-            detected_map, _ = apply_openpose(resize_image(input_image, detect_resolution))
-            detected_map = HWC3(detected_map)
-            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_NEAREST)
+            preprocessor.load('Openpose')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+                hand_and_face=True,
+            )
         elif mode == ControlNetMode.SEG:
-            model_path = "models/controlnet/control_sd15_seg.pth"
-            apply_uniformer = UniformerDetector()
-            detected_map = apply_uniformer(resize_image(input_image, detect_resolution))
-            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_NEAREST)
-        elif mode == ControlNetMode.FAKE_SCRIBBLE:
-            model_path = "models/controlnet/control_sd15_scribble.pth"
-            apply_hed = HEDdetector()
-            detected_map = apply_hed(resize_image(input_image, detect_resolution))
-            detected_map = HWC3(detected_map)
-            detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
-            detected_map = nms(detected_map, 127, 3.0)
-            detected_map = cv2.GaussianBlur(detected_map, (0, 0), 3.0)
-            detected_map[detected_map > 4] = 255
-            detected_map[detected_map < 255] = 0
+            preprocessor.load('UPerNet')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+            )
+        elif mode == ControlNetMode.DEPTH:
+            preprocessor.load('DPT')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+            )
+        elif mode == ControlNetMode.NORMAL:
+            preprocessor.load('NormalBae')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+            )
+        elif mode == ControlNetMode.LINEART:
+            preprocessor.load('Lineart')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+            )
+        elif mode == ControlNetMode.LINEART_ANIME:
+            preprocessor.load('LineartAnime')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+            )
+        elif mode == ControlNetMode.SHUFFLE:
+            preprocessor.load('ContentShuffle')
+            image = preprocessor(
+                image=image,
+                image_resolution=image_resolution,
+                detect_resolution=detect_resolution,
+            )
+        model_id = CONTROLNET_MODEL_IDS[mode]
+        controlnet = ControlNetModel.from_pretrained(model_id,
+                                                     torch_dtype=torch.float16)
+        controlnet.to(device)
 
-        model.load_state_dict(load_state_dict(model_path, location=device))
-        model = model.to(device)
-        ddim_sampler = DDIMSampler(model)
-
-        control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
-        control = torch.stack([control for _ in range(num_samples)], dim=0)
-        control = einops.rearrange(control, "b h w c -> b c h w").clone()
-
-        if seed == -1:
-            seed = random.randint(0, 65535)
-        seed_everything(seed)
-
-        if save_memory:
-            model.low_vram_shift(is_diffusing=False)
-
-        cond = {
-            "c_concat": [control],
-            "c_crossattn": [model.get_learned_conditioning([prompt + ", " + a_prompt] * num_samples)],
-        }
-        un_cond = {
-            "c_concat": None if guess_mode else [control],
-            "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)],
-        }
-        shape = (4, H // 8, W // 8)
-
-        if save_memory:
-            model.low_vram_shift(is_diffusing=True)
-
-        model.control_scales = (
-            [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
-        )  # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
-        samples, _ = ddim_sampler.sample(
-            ddim_steps,
-            num_samples,
-            shape,
-            cond,
-            verbose=False,
-            eta=eta,
-            unconditional_guidance_scale=scale,
-            unconditional_conditioning=un_cond,
+        pipe = StableDiffusionControlNetPipeline.from_pretrained(
+            "runwayml/stable-diffusion-v1-5", controlnet=controlnet, torch_dtype=torch.float16, safety_checker=None,
         )
+        pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
+        if device == 'cuda':
+            pipe.enable_xformers_memory_efficient_attention()
+        pipe.to(device)
+        pipe.enable_model_cpu_offload()
 
-        if save_memory:
-            model.low_vram_shift(is_diffusing=False)
-
-        x_samples = model.decode_first_stage(samples)
-        x_samples = (
-            (einops.rearrange(x_samples, "b c h w -> b h w c") * 127.5 + 127.5)
-            .cpu()
-            .numpy()
-            .clip(0, 255)
-            .astype(np.uint8)
-        )
-
-        results = [x_samples[i] for i in range(num_samples)]
-
+        torch.cuda.empty_cache()
         gc.collect()
 
-        if output_path:
-            filename = os.path.join(output_path, "result.jpg")
-            cv2.imwrite(filename, results[0])
-            return filename
+        generator = torch.manual_seed(seed)
 
-    return [255 - detected_map] + results
+        out_image = pipe(
+            prompt,
+            num_inference_steps=ddim_steps,
+            generator=generator,
+            negative_prompt=n_prompt,
+            image=image,
+            guess_mode=guess_mode,
+            guidance_scale=scale
+        ).images[0]
+
+        out_image.save(output_path)
+
+    return output_path
