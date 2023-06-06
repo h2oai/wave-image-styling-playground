@@ -7,11 +7,11 @@ import torch
 
 import PIL.Image
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler
-from controlnet_aux import (CannyDetector, ContentShuffleDetector, HEDdetector,
-                            LineartAnimeDetector, LineartDetector,
-                            MidasDetector, MLSDdetector, NormalBaeDetector,
-                            OpenposeDetector, PidiNetDetector)
-from controlnet_aux.util import HWC3, ade_palette
+from img_styler.image_prompt.control_net.annotator import (CannyDetector, ContentShuffleDetector, HEDdetector,
+                                                           LineartAnimeDetector, LineartDetector,
+                                                           MidasDetector, MLSDdetector, NormalBaeDetector,
+                                                           OpenposeDetector, PidiNetDetector)
+from img_styler.image_prompt.control_net.annotator.util import HWC3, ade_palette
 from transformers import AutoImageProcessor, UperNetForSemanticSegmentation, pipeline
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
