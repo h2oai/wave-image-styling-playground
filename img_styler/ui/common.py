@@ -4,6 +4,8 @@ import random
 
 from h2o_wave import Q, ui
 
+from img_styler.image_prompt.control_net.image2image import ControlNetMode
+
 from ..utils.dataops import img2buf
 from .components import (
     display_grid_view,
@@ -170,64 +172,111 @@ async def update_processed_face(q: Q, save=False):
                 ]
             elif q.client.prompt_model == "prompt_controlnet":
                 items = [ui.button(name="prompt_apply", label="Draw")]
+                expander_items = [
+                    ui.textbox(
+                        name="prompt_seed",
+                        label="Seed",
+                        value=str(q.client.prompt_seed),
+                    ),
+                    ui.slider(
+                        name="no_images",
+                        label="Images",
+                        min=1,
+                        max=12,
+                        value=q.client.no_images,
+                        tooltip="Number of image samples to generate.",
+                    ),
+                    ui.slider(
+                        name="prompt_resolution",
+                        label="Image Resolution",
+                        min=256,
+                        max=768,
+                        step=64,
+                        value=q.client.prompt_resolution or 512,
+                    ),
+                    ui.slider(
+                        name="prompt_det_resolution",
+                        label="Detect Resolution",
+                        min=256,
+                        max=768,
+                        step=64,
+                        value=q.client.prompt_det_resolution or 512,
+                    ),
+                    ui.slider(
+                        name="prompt_scale",
+                        label="Guidance Scale",
+                        min=0.1,
+                        max=30.0,
+                        step=0.1,
+                        value=q.client.prompt_scale or 9.0,
+                    ),
+                    ui.textbox(
+                        name="prompt_a",
+                        label="Added Prompt",
+                        value=q.client.prompt_a or "best quality, extremely detailed",
+                    ),
+                    ui.textbox(
+                        name="prompt_n",
+                        label="Negative Prompt",
+                        value=q.client.prompt_n or "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
+                    ),
+                    ui.slider(
+                        name="prompt_ddim_steps",
+                        label="Steps",
+                        min=1,
+                        max=100,
+                        step=1,
+                        value=q.client.prompt_ddim_steps or 20,
+                    ),
+                    ui.checkbox(
+                        name="prompt_guess_mode",
+                        label="Guess Mode",
+                        value=q.client.prompt_guess_mode or False,
+                    ),
+                ]
+                if q.args.choice_group_controlnet == ControlNetMode.CANNY:
+                    expander_items += [
+                        ui.slider(
+                            name="prompt_low_threshold",
+                            label="Canny low threshold",
+                            min=1,
+                            max=255,
+                            step=1,
+                            value=q.client.prompt_low_threshold or 100,
+                        ),
+                        ui.slider(
+                            name="prompt_high_threshold",
+                            label="Canny high threshold",
+                            min=1,
+                            max=255,
+                            step=1,
+                            value=q.client.prompt_low_threshold or 200,
+                        ),
+                    ]
+                elif q.args.choice_group_controlnet == ControlNetMode.MLSD:
+                    expander_items += [
+                        ui.slider(
+                            name="prompt_value_threshold",
+                            label="Hough value threshold (MLSD)",
+                            min=0.01,
+                            max=2.0,
+                            step=0.01,
+                            value=q.client.prompt_value_threshold or 0.1,
+                        ),
+                        ui.slider(
+                            name="prompt_distance_threshold",
+                            label="Hough distance threshold (MLSD)",
+                            min=0.01,
+                            max=20.0,
+                            step=0.01,
+                            value=q.client.prompt_distance_threshold or 0.1,
+                        ),
+                    ]
                 extra_settings = [
                     ui.expander(
                         name="expander",
                         label="Settings",
-                        items=[
-                            ui.textbox(
-                                name="prompt_seed",
-                                label="Seed",
-                                value=str(q.client.prompt_seed),
-                            ),
-                            ui.slider(
-                                name="no_images",
-                                label="Images",
-                                min=1,
-                                max=12,
-                                value=q.client.no_images,
-                                tooltip="Number of image samples to generate.",
-                            ),
-                            ui.slider(
-                                name="prompt_resolution",
-                                label="Image Resolution",
-                                min=256,
-                                max=768,
-                                step=64,
-                                value=q.client.prompt_resolution or 512,
-                            ),
-                            ui.slider(
-                                name="prompt_strength",
-                                label="Control Strength",
-                                min=0.0,
-                                max=2.0,
-                                step=0.01,
-                                value=q.client.prompt_strength or 1.0,
-                            ),
-                            ui.slider(
-                                name="prompt_scale",
-                                label="Guidance Scale",
-                                min=0.1,
-                                max=30.0,
-                                step=0.1,
-                                value=q.client.prompt_scale or 9.0,
-                            ),
-                            ui.checkbox(
-                                name="prompt_save_memory",
-                                label="Save Memory",
-                                value=q.client.prompt_save_memory or True
-                            ),
-                            ui.textbox(
-                                name="prompt_a",
-                                label="Added Prompt",
-                                value=q.client.prompt_a or "best quality, extremely detailed",
-                            ),
-                            ui.textbox(
-                                name="prompt_n",
-                                label="Negative Prompt",
-                                value=q.client.prompt_n or "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
-                            ),
-                        ],
+                        items=expander_items,
                     )
                 ]
                 image_paths.append(q.client.source_face)

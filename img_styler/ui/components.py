@@ -3,6 +3,8 @@ from typing import Optional
 
 from h2o_wave import Q, ui
 
+from img_styler.image_prompt.control_net.image2image import ControlNetMode
+
 from ..utils.dataops import img2buf
 from .layouts import get_layouts
 
@@ -467,10 +469,20 @@ def get_controls(q: Q):
                     ui.choice_group(
                         name="choice_group_controlnet",
                         label="Options",
-                        value=q.client.choice_group_controlnet or "checkbox_canny",
+                        value=q.client.choice_group_controlnet or ControlNetMode.CANNY,
                         choices=[
-                            ui.choice(name="checkbox_canny", label="Canny2Image"),
-                            ui.choice(name="checkbox_scribble", label="Scribble2Image"),
+                            ui.choice(name=ControlNetMode.POSE, label="Openpose"),
+                            ui.choice(name=ControlNetMode.CANNY, label="Canny"),
+                            ui.choice(name=ControlNetMode.MLSD, label="MLSD"),
+                            ui.choice(name=ControlNetMode.SCRIBBLE, label="Scribble"),
+                            ui.choice(name=ControlNetMode.SOFTEDGE, label="Soft-edge"),
+                            ui.choice(name=ControlNetMode.SEG, label="Segmentation"),
+                            ui.choice(name=ControlNetMode.DEPTH, label="Depth"),
+                            ui.choice(name=ControlNetMode.NORMAL, label="Normal Map"),
+                            ui.choice(name=ControlNetMode.LINEART, label="Lineart"),
+                            ui.choice(name=ControlNetMode.LINEART_ANIME, label="Lineart (Anime)"),
+                            ui.choice(name=ControlNetMode.SHUFFLE, label="Content Shuffle"),
+                            ui.choice(name=ControlNetMode.IP2P, label="Instruct Pix2Pix"),
                         ],
                         trigger=True,
                         tooltip="Stable Diffusion is a text-to-image latent diffusion model, created by the researchers and engineers from CompVis, Stability AI and LAION.",

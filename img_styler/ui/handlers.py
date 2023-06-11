@@ -13,8 +13,7 @@ from h2o_wave import Q, handle_on, on, site, ui
 from loguru import logger
 from PIL import Image
 
-from img_styler.image_prompt.control_net.canny2image import get_canny_image_samples
-from img_styler.image_prompt.control_net.scribble2image import get_scribble_image_samples
+from img_styler.image_prompt.control_net.image2image import get_controlnet_image_samples
 
 from ..caller import apply_projection, generate_gif, generate_projection, generate_style_frames, synthesize_new_img
 from ..gfpgan.inference_gfpgan import init_gfpgan, restore_image
@@ -343,30 +342,38 @@ async def prompt_apply(q: Q):
         logger.info(f"Added Prompt: {q.args.prompt_a}")
         logger.info(f"Negative Prompt: {q.args.prompt_n}")
 
-        controlnet_type = q.client.choice_group_controlnet
-        if controlnet_type == "checkbox_canny": controlnet_func = get_canny_image_samples
-        else: controlnet_func = get_scribble_image_samples
+        controlnet_mode = q.client.choice_group_controlnet
 
-        res_path = controlnet_func(
+        res_path = get_controlnet_image_samples(
             input_img_path=q.client.source_face,
             prompt=q.args.prompt_textbox,
-            output_path=OUTPUT_PATH,
+            output_path=OUTPUT_PATH + "/controlnet.jpg",
+            mode=controlnet_mode,
             seed=random_seed,
-            num_samples=no_images,
             image_resolution=check_input_value(q.args.prompt_resolution, int, 512),
+            detect_resolution=check_input_value(q.args.prompt_det_resolution, int, 512),
             scale=check_input_value(q.args.prompt_scale, float, 9.0),
-            save_memory=q.args.prompt_save_memory,
-            strength=check_input_value(q.args.prompt_strength, float, 1),
             a_prompt=q.args.prompt_a,
             n_prompt=q.args.prompt_n,
+            ddim_steps=q.args.prompt_ddim_steps,
+            guess_mode=q.args.prompt_guess_mode,
+            low_threshold=q.args.prompt_low_threshold,
+            high_threshold=q.args.prompt_high_threshold,
+            value_threshold=q.args.prompt_value_threshold,
+            distance_threshold=q.args.prompt_distance_threshold,
         )
 
         q.client.prompt_resolution = q.args.prompt_resolution
+        q.client.prompt_det_resolution = q.args.prompt_det_resolution
         q.client.prompt_scale = q.args.prompt_scale
-        q.client.prompt_save_memory = q.args.prompt_save_memory
-        q.client.prompt_strength = q.args.prompt_strength
         q.client.prompt_a = q.args.prompt_a
         q.client.prompt_n = q.args.prompt_n
+        q.client.ddim_steps = q.args.ddim_steps
+        q.client.guess_mode = q.args.guess_mode
+        q.client.low_threshold = q.args.low_threshold
+        q.client.high_threshold = q.args.high_threshold
+        q.client.value_threshold = q.args.value_threshold
+        q.client.distance_threshold = q.args.distance_threshold
         seeds = [random_seed]
 
     q.client.prompt_textbox = q.args.prompt_textbox

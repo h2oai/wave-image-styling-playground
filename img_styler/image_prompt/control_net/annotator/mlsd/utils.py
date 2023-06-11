@@ -13,7 +13,7 @@ import os
 import numpy as np
 import cv2
 import torch
-from  torch.nn import  functional as F
+from  torch.nn import functional as F
 
 
 def deccode_output_score_and_ptss(tpMap, topk_n = 200, ksize = 5):
@@ -49,6 +49,8 @@ def pred_lines(image, model,
                score_thr=0.10,
                dist_thr=20.0):
     h, w, _ = image.shape
+
+    device = next(iter(model.parameters())).device
     h_ratio, w_ratio = [h / input_shape[0], w / input_shape[1]]
 
     resized_image = np.concatenate([cv2.resize(image, (input_shape[1], input_shape[0]), interpolation=cv2.INTER_AREA),
@@ -58,7 +60,8 @@ def pred_lines(image, model,
     batch_image = np.expand_dims(resized_image, axis=0).astype('float32')
     batch_image = (batch_image / 127.5) - 1.0
 
-    batch_image = torch.from_numpy(batch_image).float().cuda()
+    batch_image = torch.from_numpy(batch_image).float()
+    batch_image = batch_image.to(device)
     outputs = model(batch_image)
     pts, pts_score, vmap = deccode_output_score_and_ptss(outputs, 200, 3)
     start = vmap[:, :, :2]

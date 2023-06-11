@@ -3,28 +3,42 @@ import numpy as np
 import torch
 import os
 
-from einops import rearrange
+from huggingface_hub import hf_hub_download
 from .models.mbv2_mlsd_tiny import MobileV2_MLSD_Tiny
 from .models.mbv2_mlsd_large import MobileV2_MLSD_Large
 from .utils import pred_lines
-
-from annotator.util import annotator_ckpts_path
-
-
-remote_model_path = "https://huggingface.co/lllyasviel/ControlNet/resolve/main/annotator/ckpts/mlsd_large_512_fp32.pth"
+from PIL import Image
+from ..open_pose.util import HWC3, resize_image
 
 
 class MLSDdetector:
-    def __init__(self):
-        model_path = os.path.join(annotator_ckpts_path, "mlsd_large_512_fp32.pth")
-        if not os.path.exists(model_path):
-            from basicsr.utils.download_util import load_file_from_url
-            load_file_from_url(remote_model_path, model_dir=annotator_ckpts_path)
+    def __init__(self, model):
+        self.model = model.eval()
+
+    @classmethod
+    def from_pretrained(cls, pretrained_model_or_path, filename=None, cache_dir=None):
+        if pretrained_model_or_path == "lllyasviel/ControlNet":
+            filename = filename or "annotator/ckpts/mlsd_large_512_fp32.pth"
+        else:
+            filename = filename or "mlsd_large_512_fp32.pth"
+
+        if os.path.isdir(pretrained_model_or_path):
+            model_path = os.path.join(pretrained_model_or_path, filename)
+        else:
+            model_path = hf_hub_download(pretrained_model_or_path, filename, cache_dir=cache_dir)
+
         model = MobileV2_MLSD_Large()
         model.load_state_dict(torch.load(model_path), strict=True)
-        self.model = model.cuda().eval()
 
-    def __call__(self, input_image, thr_v, thr_d):
+        return cls(model)
+
+    def __call__(self, input_image, thr_v=0.1, thr_d=0.1, detect_resolution=512, image_resolution=512, return_pil=True):
+        if not isinstance(input_image, np.ndarray):
+            input_image = np.array(input_image, dtype=np.uint8)
+
+        input_image = HWC3(input_image)
+        input_image = resize_image(input_image, detect_resolution)
+
         assert input_image.ndim == 3
         img = input_image
         img_output = np.zeros_like(img)
@@ -36,4 +50,16 @@ class MLSDdetector:
                     cv2.line(img_output, (x_start, y_start), (x_end, y_end), [255, 255, 255], 1)
         except Exception as e:
             pass
-        return img_output[:, :, 0]
+
+        detected_map = img_output[:, :, 0]
+
+        detected_map = HWC3(detected_map)
+        img = resize_image(input_image, image_resolution)
+        H, W, C = img.shape
+
+        detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_NEAREST)
+
+        if return_pil:
+            detected_map = Image.fromarray(detected_map)
+
+        return detected_map
